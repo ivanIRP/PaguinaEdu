@@ -51,7 +51,7 @@ export function Navbar({ user, onToggleTheme, currentTheme }: NavbarProps) {
                 <AvatarFallback>{user.fullName.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
+            <DropdownMenuContent className="w-56" align="end">
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">

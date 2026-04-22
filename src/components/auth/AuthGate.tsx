@@ -45,7 +45,7 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
           const isAdminEmail = firebaseUser.email === "ivatar1066@gmail.com";
           const newProfile: UserProfile = {
             uid: firebaseUser.uid,
-            fullName: firebaseUser.displayName || fullName || "Usuario",
+            fullName: firebaseUser.displayName || "Usuario",
             email: firebaseUser.email || "",
             role: isAdminEmail ? "admin" : "student",
             photoURL: firebaseUser.photoURL || undefined,
@@ -59,7 +59,7 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
       }
       setLoading(false);
     });
-  }, [fullName]);
+  }, []);
 
   const handleGoogleLogin = async () => {
     try {

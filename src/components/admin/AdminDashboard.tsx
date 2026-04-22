@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { db } from "../../lib/firebase";
-import { collection, addDoc, getDocs, serverTimestamp, query, orderBy, deleteDoc, doc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { UserProfile, Teacher, Course, Enrollment, Specialty, Lesson } from "../../types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
@@ -41,22 +41,28 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
   });
 
   useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
     setLoading(true);
-    const teacherSnap = await getDocs(collection(db, "teachers"));
-    const courseSnap = await getDocs(query(collection(db, "courses"), orderBy("createdAt", "desc")));
-    const enrollmentSnap = await getDocs(collection(db, "enrollments"));
-    const specialtySnap = await getDocs(collection(db, "specialties"));
-    
-    setTeachers(teacherSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Teacher)));
-    setCourses(courseSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course)));
-    setEnrollments(enrollmentSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Enrollment)));
-    setSpecialties(specialtySnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Specialty)));
-    setLoading(false);
-  };
+    const unsubTeachers = onSnapshot(collection(db, "teachers"), (snap) => {
+      setTeachers(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Teacher)));
+    });
+    const unsubCourses = onSnapshot(query(collection(db, "courses"), orderBy("createdAt", "desc")), (snap) => {
+      setCourses(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Course)));
+    });
+    const unsubEnrollments = onSnapshot(collection(db, "enrollments"), (snap) => {
+      setEnrollments(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Enrollment)));
+      setLoading(false);
+    });
+    const unsubSpecialties = onSnapshot(collection(db, "specialties"), (snap) => {
+      setSpecialties(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Specialty)));
+    });
+
+    return () => {
+      unsubTeachers();
+      unsubCourses();
+      unsubEnrollments();
+      unsubSpecialties();
+    };
+  }, []);
 
   const addSpecialty = async () => {
     if (!newSpecialty) return;
@@ -67,7 +73,6 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
       await addDoc(collection(db, "specialties"), { name: newSpecialty, createdAt: serverTimestamp() });
     }
     setNewSpecialty("");
-    fetchData();
   };
 
   const editSpecialty = (s: Specialty) => {
@@ -78,7 +83,6 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
   const deleteSpecialty = async (id: string) => {
     if (!confirm("¿Eliminar especialidad?")) return;
     await deleteDoc(doc(db, "specialties", id));
-    fetchData();
   };
 
   const addTeacher = async () => {
@@ -90,7 +94,6 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
       await addDoc(collection(db, "teachers"), newTeacher);
     }
     setNewTeacher({ name: "", email: "", specialtyId: "" });
-    fetchData();
   };
 
   const editTeacher = (t: Teacher) => {
@@ -155,7 +158,6 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
       bannerUrl: "", 
       lessons: [{ id: "1", title: "", videoUrl: "", order: 1 }] 
     });
-    fetchData();
   };
 
   const editCourse = (course: Course) => {
@@ -173,7 +175,6 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
   const deleteCourse = async (id: string) => {
     if (!confirm("¿Estás seguro de eliminar este curso?")) return;
     await deleteDoc(doc(db, "courses", id));
-    fetchData();
   };
 
   // Stats calculation

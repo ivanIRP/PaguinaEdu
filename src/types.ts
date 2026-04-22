@@ -7,7 +7,7 @@ export interface UserProfile {
   fullName: string;
   email: string;
   role: Role;
-  photoURL?: string;
+  photoURL?: string | null;
   theme?: "light" | "dark";
 }
 

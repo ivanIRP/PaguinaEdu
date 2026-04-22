@@ -48,9 +48,9 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
             fullName: firebaseUser.displayName || "Usuario",
             email: firebaseUser.email || "",
             role: isAdminEmail ? "admin" : "student",
-            photoURL: firebaseUser.photoURL || undefined,
+            photoURL: firebaseUser.photoURL || null,
             theme: "light",
-          };
+          } as UserProfile;
           await setDoc(doc(db, "users", firebaseUser.uid), newProfile);
           setUser(newProfile);
         }

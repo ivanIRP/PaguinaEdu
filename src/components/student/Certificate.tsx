@@ -54,38 +54,44 @@ export function Certificate({ course, enrollment, studentName }: CertificateProp
           left: "-9999px" 
         }}
       >
-        <div className="w-full h-full border-[10px] border-emerald-500 p-8 flex flex-col items-center justify-center text-center relative">
+        <div 
+          className="w-full h-full p-8 flex flex-col items-center justify-center text-center relative"
+          style={{ 
+            border: "10px solid #10b981", // Emerald 500
+            background: "white" 
+          }}
+        >
           <div className="absolute top-10 left-10 opacity-10">
-             <Award className="w-48 h-48" />
+             <Award className="w-48 h-48" style={{ color: "#10b981" }} />
           </div>
           
           <div className="space-y-6">
-            <h1 className="text-6xl font-serif italic text-emerald-600 mb-8 tracking-widest">EduStream</h1>
+            <h1 className="text-6xl font-serif italic mb-8 tracking-widest" style={{ color: "#059669" }}>EduStream</h1>
             
-            <p className="text-xl font-sans uppercase tracking-[0.3em] text-gray-500">Certificado de Finalización</p>
+            <p className="text-xl font-sans uppercase tracking-[0.3em]" style={{ color: "#6b7280" }}>Certificado de Finalización</p>
             
             <div className="space-y-2">
-              <p className="text-lg">Se otorga con orgullo el presente a:</p>
-              <h2 className="text-5xl font-display font-bold py-4 border-b-2 border-gray-100">{studentName}</h2>
+              <p className="text-lg" style={{ color: "#374151" }}>Se otorga con orgullo el presente a:</p>
+              <h2 className="text-5xl font-display font-bold py-4" style={{ borderBottom: "2px solid #f3f4f6", color: "#111827" }}>{studentName}</h2>
             </div>
 
-            <p className="text-xl max-w-2xl mx-auto pt-6">
+            <p className="text-xl max-w-2xl mx-auto pt-6" style={{ color: "#374151" }}>
               Por haber completado satisfactoriamente el curso integral de 
-              <span className="font-bold block text-3xl mt-2 text-emerald-700">{course.title}</span>
+              <span className="font-bold block text-3xl mt-2" style={{ color: "#047857" }}>{course.title}</span>
             </p>
 
             <div className="pt-12 flex justify-between w-full max-w-4xl px-12">
                <div className="text-center">
                   <div className="w-48 border-b border-black mb-1"></div>
-                  <p className="text-sm font-bold uppercase tracking-wider">Dirección Académica</p>
+                  <p className="text-sm font-bold uppercase tracking-wider" style={{ color: "#111827" }}>Dirección Académica</p>
                </div>
                <div className="text-center">
                   <div className="w-48 border-b border-black mb-1"></div>
-                  <p className="text-sm font-bold uppercase tracking-wider">Firma del Estudiante</p>
+                  <p className="text-sm font-bold uppercase tracking-wider" style={{ color: "#111827" }}>Firma del Estudiante</p>
                </div>
             </div>
             
-            <p className="text-xs text-gray-400 mt-8 tracking-tighter">
+            <p className="text-xs mt-8 tracking-tighter" style={{ color: "#9ca3af" }}>
               ID del Certificado: {enrollment.id} • Fecha: {new Date().toLocaleDateString()}
             </p>
           </div>

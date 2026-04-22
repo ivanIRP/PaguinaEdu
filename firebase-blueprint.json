@@ -1,0 +1,85 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "fullName": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "student"] },
+        "photoURL": { "type": "string" },
+        "theme": { "type": "string", "enum": ["light", "dark"] }
+      },
+      "required": ["fullName", "email", "role"]
+    },
+    "Teacher": {
+      "title": "Teacher",
+      "description": "Teacher information",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "specialty": { "type": "string" }
+      },
+      "required": ["name", "email", "specialty"]
+    },
+    "Course": {
+      "title": "Course",
+      "description": "Course details and content",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "teacherId": { "type": "string" },
+        "bannerUrl": { "type": "string" },
+        "lessons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "title": { "type": "string" },
+              "videoUrl": { "type": "string" }
+            }
+          }
+        },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "teacherId", "lessons"]
+    },
+    "Enrollment": {
+      "title": "Enrollment",
+      "description": "Student progress in a course",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "courseId": { "type": "string" },
+        "completedLessonIds": { "type": "array", "items": { "type": "string" } },
+        "isFinished": { "type": "boolean" },
+        "rating": { "type": "number" },
+        "comment": { "type": "string" },
+        "finishedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "courseId"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Profiles of all users"
+    },
+    "teachers/{teacherId}": {
+      "schema": "Teacher",
+      "description": "Registered teachers"
+    },
+    "courses/{courseId}": {
+      "schema": "Course",
+      "description": "Available courses"
+    },
+    "enrollments/{enrollmentId}": {
+      "schema": "Enrollment",
+      "description": "Course progress tracking"
+    }
+  }
+}

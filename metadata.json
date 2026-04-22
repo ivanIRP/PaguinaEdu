@@ -1,0 +1,6 @@
+{
+  "name": "EduStream - Plataforma de Educación Online",
+  "description": "Una plataforma integral de aprendizaje en línea similar a Udemy o Platzi, con roles de administrador y estudiante, seguimiento de progreso secuencial, reportes estadísticos y certificación.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}

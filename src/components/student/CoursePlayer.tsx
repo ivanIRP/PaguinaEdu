@@ -1,18 +1,18 @@
 import { useState, useMemo } from "react";
-import { db } from "../../lib/firebase";
+import { db } from "@/lib/firebase";
 import { doc, updateDoc, arrayUnion, serverTimestamp } from "firebase/firestore";
-import { Course, Enrollment, Lesson } from "../../types";
-import { Button } from "../ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
-import { ScrollArea } from "../ui/scroll-area";
+import { Course, Enrollment, Lesson } from "@/types";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft, Play, CheckCircle2, Lock, Star, MessageSquare, Download } from "lucide-react";
-import { Badge } from "../ui/badge";
-import { Textarea } from "../ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../ui/dialog";
-import { Progress } from "../ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Progress } from "@/components/ui/progress";
 import { Certificate } from "./Certificate";
 import { motion } from "motion/react";
-import { Label } from "../ui/label";
+import { Label } from "@/components/ui/label";
 
 interface CoursePlayerProps {
   course: Course;

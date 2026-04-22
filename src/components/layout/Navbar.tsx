@@ -1,7 +1,7 @@
-import { Role, UserProfile } from "../../types";
-import { auth } from "../../lib/firebase";
+import { Role, UserProfile } from "@/types";
+import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 import { LogOut, Sun, Moon, GraduationCap, User } from "lucide-react";
 import {
   DropdownMenu,
@@ -10,8 +10,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface NavbarProps {
   user: UserProfile;

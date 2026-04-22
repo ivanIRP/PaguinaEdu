@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { db } from "../../lib/firebase";
-import { collection, onSnapshot, query, orderBy, doc, setDoc, updateDoc } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, doc, setDoc, updateDoc, where } from "firebase/firestore";
 import { UserProfile, Course, Enrollment, Teacher, Specialty } from "../../types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
@@ -34,8 +34,8 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
     const unsubSpecialties = onSnapshot(collection(db, "specialties"), (snap) => {
       setSpecialties(snap.docs.map(d => ({ id: d.id, ...d.data() } as Specialty)));
     });
-    const unsubEnrollments = onSnapshot(collection(db, "enrollments"), (snap) => {
-      setEnrollments(snap.docs.map(d => ({ id: d.id, ...d.data() } as Enrollment)).filter(e => e.userId === user.uid));
+    const unsubEnrollments = onSnapshot(query(collection(db, "enrollments"), where("userId", "==", user.uid)), (snap) => {
+      setEnrollments(snap.docs.map(d => ({ id: d.id, ...d.data() } as Enrollment)));
       setLoading(false);
     });
 

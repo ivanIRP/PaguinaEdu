@@ -1,36 +1,98 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions
+    // -------------------------------------------------------------------------
+    // Helper Functions
+    // -------------------------------------------------------------------------
     function isSignedIn() { return request.auth != null; }
     function isAdmin() { return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'; }
     function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
-    function isValidId(id) { return id is string && id.size() <= 128; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
 
+    // -------------------------------------------------------------------------
+    // Global Safety Net
+    // -------------------------------------------------------------------------
     match /{document=**} {
       allow read, write: if false;
     }
 
+    // -------------------------------------------------------------------------
+    // Users
+    // -------------------------------------------------------------------------
+    function isValidUser(data) {
+      return data.fullName is string && data.fullName.size() <= 200 &&
+             data.email is string && data.email.size() <= 200 &&
+             data.role in ['admin', 'student'];
+    }
+
     match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) && isValidUser(incoming());
+      allow update: if (isOwner(userId) || isAdmin()) && isValidUser(incoming());
+    }
+
+    // -------------------------------------------------------------------------
+    // Specialties
+    // -------------------------------------------------------------------------
+    function isValidSpecialty(data) {
+      return data.name is string && data.name.size() <= 100;
+    }
+
+    match /specialties/{specialtyId} {
       allow read: if isSignedIn();
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId) || isAdmin();
+      allow create, update: if isAdmin() && isValidSpecialty(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // Teachers
+    // -------------------------------------------------------------------------
+    function isValidTeacher(data) {
+      return data.name is string && data.name.size() <= 200 &&
+             data.email is string && data.email.size() <= 200 &&
+             data.specialtyId is string;
     }
 
     match /teachers/{teacherId} {
       allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow create, update: if isAdmin() && isValidTeacher(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // Courses
+    // -------------------------------------------------------------------------
+    function isValidCourse(data) {
+      return data.title is string && data.title.size() <= 200 &&
+             data.teacherId is string &&
+             data.lessons is list && data.lessons.size() <= 100;
     }
 
     match /courses/{courseId} {
       allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow create, update: if isAdmin() && isValidCourse(incoming());
+      allow delete: if isAdmin();
+    }
+
+    // -------------------------------------------------------------------------
+    // Enrollments
+    // -------------------------------------------------------------------------
+    function isValidEnrollment(data) {
+      return data.userId is string &&
+             data.courseId is string &&
+             data.completedLessonIds is list;
     }
 
     match /enrollments/{enrollmentId} {
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
-      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
-      allow update: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow get: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow list: if isAdmin();
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid && isValidEnrollment(request.resource.data);
+      allow update: if (isOwner(resource.data.userId) || isAdmin()) && isValidEnrollment(request.resource.data);
+      allow delete: if isAdmin();
     }
   }
 }

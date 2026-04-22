@@ -13,6 +13,16 @@
       },
       "required": ["fullName", "email", "role"]
     },
+    "Specialty": {
+      "title": "Specialty",
+      "description": "Educational specialty or category",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name"]
+    },
     "Teacher": {
       "title": "Teacher",
       "description": "Teacher information",
@@ -20,9 +30,9 @@
       "properties": {
         "name": { "type": "string" },
         "email": { "type": "string" },
-        "specialty": { "type": "string" }
+        "specialtyId": { "type": "string" }
       },
-      "required": ["name", "email", "specialty"]
+      "required": ["name", "email", "specialtyId"]
     },
     "Course": {
       "title": "Course",
@@ -40,7 +50,8 @@
             "properties": {
               "id": { "type": "string" },
               "title": { "type": "string" },
-              "videoUrl": { "type": "string" }
+              "videoUrl": { "type": "string" },
+              "order": { "type": "number" }
             }
           }
         },
@@ -68,6 +79,10 @@
     "users/{userId}": {
       "schema": "User",
       "description": "Profiles of all users"
+    },
+    "specialties/{specialtyId}": {
+      "schema": "Specialty",
+      "description": "Course specialties/categories"
     },
     "teachers/{teacherId}": {
       "schema": "Teacher",

@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
-import { db } from "@/lib/firebase";
+import { db } from "../../lib/firebase";
 import { collection, onSnapshot, query, orderBy, doc, setDoc, updateDoc } from "firebase/firestore";
-import { UserProfile, Course, Enrollment, Teacher } from "@/types";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
+import { UserProfile, Course, Enrollment, Teacher } from "../../types";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
+import { Button } from "../ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import { Badge } from "../ui/badge";
+import { Progress } from "../ui/progress";
 import { Search, BookOpen, GraduationCap, PlayCircle, CheckCircle2, User } from "lucide-react";
 import { CoursePlayer } from "./CoursePlayer";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Label } from "../ui/label";
+import { Input } from "../ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 export function StudentDashboard({ user }: { user: UserProfile }) {
   const [courses, setCourses] = useState<Course[]>([]);

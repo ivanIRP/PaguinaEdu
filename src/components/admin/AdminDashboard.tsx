@@ -346,7 +346,16 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Título del Curso</Label>
-                  <Input value={newCourse.title} onChange={e => setNewCourse({...newCourse, title: e.target.value})} />
+                  <Input value={newCourse.title} onChange={e => setNewCourse({...newCourse, title: e.target.value})} placeholder="Ej: React Avanzado" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Breve Descripción</Label>
+                  <textarea 
+                    className="w-full flex min-h-[80px] rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder="Describe de qué trata el curso..."
+                    value={newCourse.description}
+                    onChange={e => setNewCourse({...newCourse, description: e.target.value})}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Profesor</Label>
@@ -359,14 +368,16 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
                     </SelectTrigger>
                     <SelectContent>
                       {teachers.map(t => (
-                        <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                        <SelectItem key={t.id} value={t.id}>
+                          {t.name} ({specialties.find(s => s.id === t.specialtyId)?.name || 'Sin especialidad'})
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Banner URL (Imagen)</Label>
-                  <Input value={newCourse.bannerUrl} onChange={e => setNewCourse({...newCourse, bannerUrl: e.target.value})} />
+                  <Input value={newCourse.bannerUrl} onChange={e => setNewCourse({...newCourse, bannerUrl: e.target.value})} placeholder="https://..." />
                 </div>
                 
                 <div className="space-y-4 pt-4 border-t">
@@ -473,7 +484,9 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
                         </div>
                         <div className="p-6">
                            <div className="text-[10px] font-800 text-indigo-400 uppercase tracking-widest mb-1">
-                             {c.lessons.length} Lecciones • {teachers.find(t => t.id === c.teacherId)?.name}
+                             {c.lessons.length} Lecciones • {
+                               specialties.find(s => s.id === teachers.find(t => t.id === c.teacherId)?.specialtyId)?.name || 'Especialidad'
+                             } • {teachers.find(t => t.id === c.teacherId)?.name}
                            </div>
                            <h3 className="text-xl font-800 tracking-tighter uppercase leading-tight line-clamp-2">{c.title}</h3>
                         </div>

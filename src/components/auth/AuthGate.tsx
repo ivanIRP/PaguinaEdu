@@ -30,6 +30,9 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
   const [fullName, setFullName] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
 
+  const [isFinishingProfile, setIsFinishingProfile] = useState(false);
+  const [profileName, setProfileName] = useState("");
+
   useEffect(() => {
     // Log project ID to help user verify they are in the correct console
     console.log("Firebase initialized with project:", auth.app.options.projectId);
@@ -39,13 +42,26 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
       if (firebaseUser) {
         const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
         if (userDoc.exists()) {
-          setUser(userDoc.data() as UserProfile);
+          const userData = userDoc.data() as UserProfile;
+          setUser(userData);
+          // If name is placeholder, prompt for change
+          if (userData.fullName === "Usuario" || !userData.fullName) {
+             setIsFinishingProfile(true);
+          }
         } else {
           // Create new user profile for first-time login
           const isAdminEmail = firebaseUser.email === "ivatar1066@gmail.com";
+          const initialName = firebaseUser.displayName || "";
+          
+          if (!initialName) {
+            setIsFinishingProfile(true);
+            setLoading(false);
+            return;
+          }
+
           const newProfile: UserProfile = {
             uid: firebaseUser.uid,
-            fullName: firebaseUser.displayName || "Usuario",
+            fullName: initialName,
             email: firebaseUser.email || "",
             role: isAdminEmail ? "admin" : "student",
             photoURL: firebaseUser.photoURL || null,
@@ -56,10 +72,35 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
         }
       } else {
         setUser(null);
+        setIsFinishingProfile(false);
       }
       setLoading(false);
     });
   }, []);
+
+  const finishProfile = async () => {
+    if (!profileName.trim() || !auth.currentUser) return;
+    setAuthLoading(true);
+    try {
+      const firebaseUser = auth.currentUser;
+      const isAdminEmail = firebaseUser.email === "ivatar1066@gmail.com";
+      const newProfile: UserProfile = {
+        uid: firebaseUser.uid,
+        fullName: profileName,
+        email: firebaseUser.email || "",
+        role: isAdminEmail ? "admin" : "student",
+        photoURL: firebaseUser.photoURL || null,
+        theme: "light",
+      } as UserProfile;
+      await setDoc(doc(db, "users", firebaseUser.uid), newProfile);
+      setUser(newProfile);
+      setIsFinishingProfile(false);
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
 
   const handleGoogleLogin = async () => {
     try {
@@ -103,7 +144,7 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
     );
   }
 
-  if (!user) {
+  if (!user || isFinishingProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#050505] p-4 relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-600/20 blur-[120px] rounded-full pointer-events-none" />
@@ -114,7 +155,44 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
            transition={{ duration: 0.5 }}
            className="z-10 w-full max-w-md"
         >
-          <div className="glass p-8 md:p-12 rounded-[40px] border-white/10 shadow-2xl relative">
+          <div className="glass p-8 md:p-12 rounded-[40px] border-white/10 shadow-2xl relative text-center">
+            {isFinishingProfile ? (
+              <div className="space-y-6">
+                <div className="mx-auto w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center">
+                   <User className="w-8 h-8 text-indigo-500" />
+                </div>
+                <div className="space-y-2">
+                   <h2 className="text-3xl font-800 uppercase tracking-tighter italic">Completa tu Perfil</h2>
+                   <p className="text-xs text-white/40 font-medium leading-relaxed">
+                     Para emitir tus certificados correctamente, necesitamos tu nombre completo.
+                   </p>
+                </div>
+                <div className="space-y-4">
+                   <div className="space-y-2 text-left">
+                      <Label className="text-[10px] uppercase tracking-widest opacity-60">Nombre Completo</Label>
+                      <Input 
+                        placeholder="Ingresa tu nombre y apellidos"
+                        value={profileName}
+                        onChange={(e) => setProfileName(e.target.value)}
+                        className="bg-white/5 border-white/10 h-12 rounded-xl"
+                      />
+                   </div>
+                   <Button 
+                     onClick={finishProfile}
+                     disabled={authLoading || !profileName.trim()}
+                     className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white font-800 uppercase text-[11px] tracking-widest rounded-2xl shadow-glow"
+                   >
+                     {authLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Empezar Mi Ruta Ahora_"}
+                   </Button>
+                   <button 
+                     onClick={() => auth.signOut()}
+                     className="text-[10px] font-bold uppercase tracking-widest text-white/20 hover:text-white"
+                   >
+                     Cancelar y Salir
+                   </button>
+                </div>
+              </div>
+            ) : (
             <AnimatePresence mode="wait">
               {authMode === "google" && (
                 <motion.div
@@ -262,6 +340,7 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
                 </motion.div>
               )}
             </AnimatePresence>
+            )}
 
             <div className="mt-8 text-center">
                <div className="text-[9px] uppercase tracking-widest opacity-20 font-bold">

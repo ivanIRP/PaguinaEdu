@@ -80,14 +80,10 @@ export function Certificate({ course, enrollment, studentName }: CertificateProp
               <span className="font-bold block text-3xl mt-2" style={{ color: "#047857" }}>{course.title}</span>
             </p>
 
-            <div className="pt-12 flex justify-between w-full max-w-4xl px-12">
+            <div className="pt-12 flex justify-center w-full px-12">
                <div className="text-center">
-                  <div className="w-48 border-b border-black mb-1"></div>
-                  <p className="text-sm font-bold uppercase tracking-wider" style={{ color: "#111827" }}>Dirección Académica</p>
-               </div>
-               <div className="text-center">
-                  <div className="w-48 border-b border-black mb-1"></div>
-                  <p className="text-sm font-bold uppercase tracking-wider" style={{ color: "#111827" }}>Firma del Estudiante</p>
+                  <div className="w-64 border-b border-black mb-1"></div>
+                  <p className="text-sm font-bold uppercase tracking-wider" style={{ color: "#111827" }}>Validación Académica • EduStream</p>
                </div>
             </div>
             

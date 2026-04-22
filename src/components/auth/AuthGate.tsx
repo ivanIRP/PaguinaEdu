@@ -31,6 +31,9 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
   const [authLoading, setAuthLoading] = useState(false);
 
   useEffect(() => {
+    // Log project ID to help user verify they are in the correct console
+    console.log("Firebase initialized with project:", auth.app.options.projectId);
+    
     return onAuthStateChanged(auth, async (firebaseUser) => {
       setLoading(true);
       if (firebaseUser) {
@@ -82,7 +85,11 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
         await signInWithEmailAndPassword(auth, email, password);
       }
     } catch (error: any) {
-      setError(error.message);
+      if (error.code === "auth/operation-not-allowed") {
+        setError("El registro por correo está desactivado en Firebase. Debes habilitar 'Email/Password' en la pestaña 'Sign-in method' de tu consola de Firebase.");
+      } else {
+        setError(error.message);
+      }
     } finally {
       setAuthLoading(false);
     }

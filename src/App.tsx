@@ -18,15 +18,25 @@ export default function App() {
   );
 }
 
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "./lib/firebase";
+
 function MainLayout({ user }: { user: UserProfile }) {
-  const [theme, setTheme] = useState(user.theme || "light");
+  const [theme, setTheme] = useState(user.theme || "dark");
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
 
-  // Handle local theme toggle if needed
-  const toggleTheme = () => setTheme(prev => prev === "light" ? "dark" : "light");
+  const toggleTheme = async () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    try {
+      await updateDoc(doc(db, "users", user.uid), { theme: newTheme });
+    } catch (e) {
+      console.error("Error updating theme:", e);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">

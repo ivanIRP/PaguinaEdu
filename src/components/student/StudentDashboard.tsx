@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { db } from "../../lib/firebase";
 import { collection, onSnapshot, query, orderBy, doc, setDoc, updateDoc } from "firebase/firestore";
-import { UserProfile, Course, Enrollment, Teacher } from "../../types";
+import { UserProfile, Course, Enrollment, Teacher, Specialty } from "../../types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 export function StudentDashboard({ user }: { user: UserProfile }) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [specialties, setSpecialties] = useState<Specialty[]>([]);
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,6 +31,9 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
     const unsubTeachers = onSnapshot(collection(db, "teachers"), (snap) => {
       setTeachers(snap.docs.map(d => ({ id: d.id, ...d.data() } as Teacher)));
     });
+    const unsubSpecialties = onSnapshot(collection(db, "specialties"), (snap) => {
+      setSpecialties(snap.docs.map(d => ({ id: d.id, ...d.data() } as Specialty)));
+    });
     const unsubEnrollments = onSnapshot(collection(db, "enrollments"), (snap) => {
       setEnrollments(snap.docs.map(d => ({ id: d.id, ...d.data() } as Enrollment)).filter(e => e.userId === user.uid));
       setLoading(false);
@@ -38,6 +42,7 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
     return () => {
       unsubCourses();
       unsubTeachers();
+      unsubSpecialties();
       unsubEnrollments();
     };
   }, [user.uid]);
@@ -69,6 +74,8 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
         course={selectedCourse} 
         enrollment={enrollment!} 
         studentName={user.fullName}
+        teachers={teachers}
+        specialties={specialties}
         onBack={() => setSelectedCourse(null)} 
       />
     );

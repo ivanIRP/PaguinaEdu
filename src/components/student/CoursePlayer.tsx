@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react";
+import ReactPlayer from "react-player";
 import { db } from "../../lib/firebase";
 import { doc, updateDoc, arrayUnion, serverTimestamp } from "firebase/firestore";
-import { Course, Enrollment, Lesson } from "../../types";
+import { Course, Enrollment, Lesson, Teacher, Specialty } from "../../types";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
@@ -11,29 +12,36 @@ import { Textarea } from "../ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../ui/dialog";
 import { Progress } from "../ui/progress";
 import { Certificate } from "./Certificate";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { Label } from "../ui/label";
 
 interface CoursePlayerProps {
   course: Course;
   enrollment: Enrollment;
   studentName: string;
+  teachers: Teacher[];
+  specialties: Specialty[];
   onBack: () => void;
 }
 
-export function CoursePlayer({ course, enrollment: initialEnrollment, studentName, onBack }: CoursePlayerProps) {
+export function CoursePlayer({ course, enrollment: initialEnrollment, studentName, teachers, specialties, onBack }: CoursePlayerProps) {
   const [enrollment, setEnrollment] = useState(initialEnrollment);
-  const [activeLesson, setActiveLesson] = useState<Lesson>(course.lessons[0]);
+  const sortedLessons = useMemo(() => [...course.lessons].sort((a, b) => (a.order || 0) - (b.order || 0)), [course.lessons]);
+  const [activeLesson, setActiveLesson] = useState<Lesson>(sortedLessons[0]);
   const [isRatingOpen, setIsRatingOpen] = useState(false);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [playerReady, setPlayerReady] = useState(false);
+
+  const teacher = teachers.find(t => t.id === course.teacherId);
+  const specialty = specialties.find(s => s.id === teacher?.specialtyId);
 
   // Sequential Logic: A lesson is unlocked if it's the first one or the previous one is completed.
   const isLessonUnlocked = (lessonId: string) => {
-    const index = course.lessons.findIndex(l => l.id === lessonId);
+    const index = sortedLessons.findIndex(l => l.id === lessonId);
     if (index === 0) return true;
-    const prevLessonId = course.lessons[index - 1].id;
+    const prevLessonId = sortedLessons[index - 1].id;
     return enrollment.completedLessonIds.includes(prevLessonId);
   };
 
@@ -48,7 +56,7 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
     setEnrollment(prev => ({ ...prev, completedLessonIds: newCompleted }));
 
     // Check if the whole course was finished
-    if (newCompleted.length === course.lessons.length) {
+    if (newCompleted.length === sortedLessons.length) {
       if (!enrollment.isFinished) {
         setIsRatingOpen(true);
       }
@@ -69,20 +77,20 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
     setIsSubmitting(false);
   };
 
-  const progress = Math.round((enrollment.completedLessonIds.length / course.lessons.length) * 100);
+  const progress = Math.round((enrollment.completedLessonIds.length / sortedLessons.length) * 100);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 h-[calc(100vh-160px)]">
+    <div className="flex flex-col lg:flex-row gap-8 h-full min-h-0">
       {/* Sidebar - Lessons List */}
-      <aside className="w-full lg:w-96 flex flex-col h-full glass rounded-[32px] overflow-hidden border-white/10 shrink-0 shadow-2xl">
+      <aside className="w-full lg:w-96 flex flex-col h-[500px] lg:h-auto glass rounded-[32px] overflow-hidden border-white/10 shrink-0 shadow-2xl">
         <CardHeader className="p-8 border-b border-white/5 space-y-4">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={onBack} className="h-10 w-10 bg-white/5 rounded-xl hover:bg-white/10 transition-all">
+            <Button variant="ghost" size="icon" onClick={onBack} className="h-10 w-10 bg-white/5 rounded-xl hover:bg-white/10 transition-all shrink-0">
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-0">
                <div className="text-[10px] font-800 text-indigo-500 uppercase tracking-widest leading-none mb-1">Learning Path</div>
-               <CardTitle className="text-xl font-800 tracking-tighter uppercase italic leading-none">{course.title}</CardTitle>
+               <CardTitle className="text-lg font-800 tracking-tighter uppercase italic leading-none truncate">{course.title}</CardTitle>
             </div>
           </div>
           <div className="space-y-2">
@@ -97,7 +105,7 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
         </CardHeader>
         <ScrollArea className="flex-1">
           <div className="p-4 space-y-2">
-            {course.lessons.map((lesson, idx) => {
+            {sortedLessons.map((lesson, idx) => {
               const unlocked = isLessonUnlocked(lesson.id);
               const completed = enrollment.completedLessonIds.includes(lesson.id);
               const active = activeLesson.id === lesson.id;
@@ -115,7 +123,7 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
                         : "opacity-30 border-transparent grayscale"
                   }`}
                 >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-800 transition-colors ${
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-800 transition-colors shrink-0 ${
                     completed ? "bg-green-500/20 text-green-500" : active ? "bg-indigo-600 text-white" : "border border-white/20"
                   }`}>
                     {completed ? <CheckCircle2 className="w-4 h-4" /> : String(idx + 1).padStart(2, '0')}
@@ -126,79 +134,95 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
                       {lesson.title}
                     </p>
                   </div>
-                  {!unlocked && <Lock className="w-3 h-3 text-white/20" />}
+                  {!unlocked && <Lock className="w-3 h-3 text-white/20 shrink-0" />}
                 </button>
               );
             })}
           </div>
         </ScrollArea>
         {enrollment.isFinished && (
-           <div className="p-6 bg-indigo-600/10 border-t border-indigo-500/20">
+           <div className="p-6 bg-indigo-600/10 border-t border-indigo-500/20 mt-auto">
               <Certificate course={course} enrollment={enrollment} studentName={studentName} />
            </div>
         )}
       </aside>
 
       {/* Main Player Area */}
-      <main className="flex-1 flex flex-col min-w-0">
-        <header className="mb-8 space-y-2">
-           <div className="text-sm font-bold text-indigo-500 uppercase tracking-[0.3em]">Module • Video</div>
-           <h1 className="text-5xl md:text-7xl font-800 tracking-tighter leading-none uppercase">
-             {activeLesson.title.split(" ").slice(0, -1).join(" ")}<br />
-             <span className="bold-stroke">{activeLesson.title.split(" ").pop()}</span>
+      <main className="flex-1 flex flex-col min-w-0 pb-12">
+        <header className="mb-6 space-y-2">
+           <div className="text-xs font-bold text-indigo-500 uppercase tracking-[0.3em]">Module • Video Training</div>
+           <h1 className="text-4xl md:text-5xl lg:text-7xl font-800 tracking-tighter leading-[0.9] uppercase break-words">
+             {activeLesson.title}
            </h1>
         </header>
 
-        <div className="relative aspect-video rounded-[40px] overflow-hidden border border-white/10 shadow-2xl bg-black group mb-8">
-           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10 opacity-60"></div>
-           <div className="absolute inset-0 flex items-center justify-center z-20">
-              <div className="text-center group-hover:scale-110 transition-transform duration-500">
-                 <button 
-                   onClick={() => completeLesson(activeLesson.id)}
-                   className="w-24 h-24 bg-white text-black rounded-full flex items-center justify-center shadow-glow hover:bg-indigo-50 transition-all mb-4 mx-auto"
-                 >
-                    <Play className="w-8 h-8 fill-current ml-1" />
-                 </button>
-                 <Badge className="bg-indigo-600/20 border-indigo-500/20 text-indigo-400 uppercase text-[10px] font-800 px-3">Mock Player Mode</Badge>
-              </div>
-           </div>
+        <div className="relative aspect-video rounded-[2rem] lg:rounded-[3rem] overflow-hidden border border-white/10 shadow-3xl bg-black group mb-8">
+           <AnimatePresence mode="wait">
+             <motion.div
+               key={activeLesson.id}
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               className="w-full h-full"
+             >
+                <ReactPlayer
+                  url={activeLesson.videoUrl}
+                  width="100%"
+                  height="100%"
+                  controls
+                  playing={false}
+                  onEnded={() => completeLesson(activeLesson.id)}
+                  onReady={() => setPlayerReady(true)}
+                  config={{
+                    youtube: { playerVars: { showinfo: 0, rel: 0 } },
+                    vimeo: { playerOptions: { title: 0, byline: 0, portrait: 0 } }
+                  }}
+                  className="absolute inset-0"
+                  style={{ position: 'absolute', top: 0, left: 0 }}
+                />
+             </motion.div>
+           </AnimatePresence>
            
-           <div className="absolute bottom-10 left-10 right-10 z-20 flex justify-between items-end">
-              <div className="space-y-1">
-                 <div className="text-[10px] font-800 text-indigo-400 uppercase tracking-widest opacity-80">ESTADO DE LECCIÓN</div>
-                 <div className="text-2xl font-800 uppercase tracking-tighter">
-                   {enrollment.completedLessonIds.includes(activeLesson.id) ? "Lección Completada ✓" : "En proceso de aprendizaje"}
-                 </div>
-              </div>
-              <div className="flex flex-col items-end gap-2">
-                 <div className="text-[11px] font-800 font-mono text-white/40 uppercase">05:22 / 14:00</div>
-                 <div className="w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                    <motion.div 
-                      initial={{ width: 0 }}
-                      animate={{ width: enrollment.completedLessonIds.includes(activeLesson.id) ? "100%" : "30%" }}
-                      className="h-full bg-indigo-500"
-                    />
-                 </div>
-              </div>
-           </div>
+           {!playerReady && (
+             <div className="absolute inset-0 flex items-center justify-center bg-zinc-950 z-10">
+                <motion.div 
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                  className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full"
+                />
+             </div>
+           )}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-           <div className="glass p-6 rounded-3xl border-white/10">
-              <div className="text-[10px] uppercase font-800 text-white/30 tracking-widest mb-2">Professor</div>
-              <div className="flex items-center gap-3">
-                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 border border-white/20 shadow-glow" />
-                 <div className="text-sm font-800 uppercase tracking-tighter">Specialist Lead</div>
+           <div className="glass p-6 rounded-[2.5rem] border-white/10 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] uppercase font-800 text-white/30 tracking-widest mb-2 px-1">Professor</div>
+                <div className="flex items-center gap-3">
+                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 border border-white/20 shadow-glow shrink-0 overflow-hidden" />
+                   <div className="flex flex-col">
+                      <div className="text-sm font-800 uppercase tracking-tighter leading-none">{teacher?.name || "Specialist"}</div>
+                      <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-tighter mt-1">{specialty?.name || "Senior Lead"}</div>
+                   </div>
+                </div>
               </div>
            </div>
-           <div className="glass p-6 rounded-3xl border-white/10">
-              <div className="text-[10px] uppercase font-800 text-white/30 tracking-widest mb-2">Social</div>
-              <div className="text-2xl font-800 italic uppercase">2.4k</div>
-              <div className="text-[10px] text-indigo-400 font-bold uppercase tracking-tighter">Active Students</div>
+           
+           <div className="glass p-6 rounded-[2.5rem] border-white/10">
+              <div className="text-[10px] uppercase font-800 text-white/30 tracking-widest mb-2 px-1">Course Content</div>
+              <div className="flex items-end justify-between">
+                 <div className="text-3xl font-800 italic uppercase leading-none">{sortedLessons.length}</div>
+                 <div className="text-[10px] text-white/40 font-bold uppercase tracking-tighter">Total Lessons</div>
+              </div>
            </div>
-           <div className="glass p-6 rounded-3xl border-white/10 flex flex-col justify-center">
-              <Button onClick={() => completeLesson(activeLesson.id)} className="bg-white text-black hover:bg-neutral-200 uppercase text-[10px] font-800 tracking-widest h-12 rounded-2xl">
-                 Marcar Completada_
+
+           <div className="glass p-6 rounded-[2.5rem] border-white/10 flex flex-col justify-center">
+              <Button 
+                onClick={() => completeLesson(activeLesson.id)} 
+                disabled={enrollment.completedLessonIds.includes(activeLesson.id)}
+                className="bg-white text-black hover:bg-neutral-200 uppercase text-[10px] font-800 tracking-widest h-14 rounded-3xl shadow-glow disabled:bg-white/5 disabled:text-white/20 disabled:shadow-none transition-all"
+              >
+                 {enrollment.completedLessonIds.includes(activeLesson.id) ? "Lesson Completed ✓" : "Mark as Completed_"}
               </Button>
            </div>
         </div>

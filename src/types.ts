@@ -15,13 +15,19 @@ export interface Teacher {
   id: string;
   name: string;
   email: string;
-  specialty: string;
+  specialtyId: string;
+}
+
+export interface Specialty {
+  id: string;
+  name: string;
 }
 
 export interface Lesson {
   id: string;
   title: string;
   videoUrl: string;
+  order: number;
 }
 
 export interface Course {

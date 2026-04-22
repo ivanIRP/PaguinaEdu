@@ -12,6 +12,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Users, BookOpen, BarChart3, Plus, Trash2, LayoutDashboard, Settings, Edit, ArrowUp, ArrowDown, ExternalLink } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
+import { CoursePlayer } from "../student/CoursePlayer";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { Upload, Eye } from "lucide-react";
+
 export function AdminDashboard({ user }: { user: UserProfile }) {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
@@ -21,8 +25,13 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
 
   // Form states
   const [newSpecialty, setNewSpecialty] = useState("");
+  const [editingSpecialtyId, setEditingSpecialtyId] = useState<string | null>(null);
+  
   const [newTeacher, setNewTeacher] = useState({ name: "", email: "", specialtyId: "" });
+  const [editingTeacherId, setEditingTeacherId] = useState<string | null>(null);
+
   const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [newCourse, setNewCourse] = useState({ 
     title: "", 
     description: "", 
@@ -51,21 +60,42 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
 
   const addSpecialty = async () => {
     if (!newSpecialty) return;
-    await addDoc(collection(db, "specialties"), { name: newSpecialty });
+    if (editingSpecialtyId) {
+      await updateDoc(doc(db, "specialties", editingSpecialtyId), { name: newSpecialty });
+      setEditingSpecialtyId(null);
+    } else {
+      await addDoc(collection(db, "specialties"), { name: newSpecialty, createdAt: serverTimestamp() });
+    }
     setNewSpecialty("");
     fetchData();
   };
 
+  const editSpecialty = (s: Specialty) => {
+    setNewSpecialty(s.name);
+    setEditingSpecialtyId(s.id);
+  };
+
   const deleteSpecialty = async (id: string) => {
+    if (!confirm("¿Eliminar especialidad?")) return;
     await deleteDoc(doc(db, "specialties", id));
     fetchData();
   };
 
   const addTeacher = async () => {
     if (!newTeacher.name || !newTeacher.email || !newTeacher.specialtyId) return;
-    await addDoc(collection(db, "teachers"), newTeacher);
+    if (editingTeacherId) {
+      await updateDoc(doc(db, "teachers", editingTeacherId), newTeacher);
+      setEditingTeacherId(null);
+    } else {
+      await addDoc(collection(db, "teachers"), newTeacher);
+    }
     setNewTeacher({ name: "", email: "", specialtyId: "" });
     fetchData();
+  };
+
+  const editTeacher = (t: Teacher) => {
+    setNewTeacher({ name: t.name, email: t.email, specialtyId: t.specialtyId });
+    setEditingTeacherId(t.id);
   };
 
   const addLesson = () => {
@@ -92,6 +122,14 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
     const lessons = [...newCourse.lessons];
     lessons[index][field] = value;
     setNewCourse({ ...newCourse, lessons });
+  };
+
+  const handleFileUpload = (index: number, file: File | null) => {
+    if (!file) return;
+    // In a real app, you'd upload this to Firebase Storage.
+    // For this demo/preview, we'll create a local Object URL.
+    const url = URL.createObjectURL(file);
+    handleLessonChange(index, "videoUrl", url);
   };
 
   const addCourse = async () => {
@@ -213,7 +251,7 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <Card className="lg:col-span-1">
               <CardHeader>
-                <CardTitle>Agregar Profesor</CardTitle>
+                <CardTitle>{editingTeacherId ? "Editar Profesor" : "Agregar Profesor"}</CardTitle>
                 <CardDescription>Crea un nuevo perfil de docente especializado.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -227,7 +265,10 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
                 </div>
                 <div className="space-y-2">
                   <Label>Especialidad</Label>
-                  <Select onValueChange={val => setNewTeacher({...newTeacher, specialtyId: val})}>
+                  <Select 
+                    value={newTeacher.specialtyId || ""} 
+                    onValueChange={val => setNewTeacher({...newTeacher, specialtyId: val || ""})}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar especialidad" />
                     </SelectTrigger>
@@ -238,7 +279,15 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={addTeacher} className="w-full">Registrar Profesor</Button>
+                <div className="flex gap-2">
+                   {editingTeacherId && (
+                     <Button variant="outline" onClick={() => {
+                        setEditingTeacherId(null);
+                        setNewTeacher({ name: "", email: "", specialtyId: "" });
+                     }} className="flex-1">Cancelar</Button>
+                   )}
+                   <Button onClick={addTeacher} className="flex-[2]">{editingTeacherId ? "Guardar Cambios" : "Registrar Profesor"}</Button>
+                </div>
               </CardContent>
             </Card>
 
@@ -253,6 +302,7 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
                       <TableHead>Nombre</TableHead>
                       <TableHead>Especialidad</TableHead>
                       <TableHead>Email</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -261,6 +311,21 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
                         <TableCell className="font-medium">{t.name}</TableCell>
                         <TableCell>{specialties.find(s => s.id === t.specialtyId)?.name || 'Sin especialidad'}</TableCell>
                         <TableCell>{t.email}</TableCell>
+                        <TableCell className="text-right">
+                           <div className="flex justify-end gap-2">
+                              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editTeacher(t)}>
+                                 <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600" onClick={async () => {
+                                 if(confirm("¿Eliminar profesor?")) {
+                                    await deleteDoc(doc(db, "teachers", t.id));
+                                    fetchData();
+                                 }
+                              }}>
+                                 <Trash2 className="w-4 h-4" />
+                              </Button>
+                           </div>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -284,7 +349,10 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
                 </div>
                 <div className="space-y-2">
                   <Label>Profesor</Label>
-                  <Select value={newCourse.teacherId} onValueChange={val => setNewCourse({...newCourse, teacherId: val})}>
+                  <Select 
+                    value={newCourse.teacherId || ""} 
+                    onValueChange={val => setNewCourse({...newCourse, teacherId: val || ""})}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar profesor" />
                     </SelectTrigger>
@@ -328,21 +396,58 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
                            </div>
                         </div>
                         <Input placeholder="Título de lección" className="h-10 text-xs font-bold rounded-xl border-white/5 bg-white/5" value={lesson.title} onChange={e => handleLessonChange(idx, "title", e.target.value)} />
-                        <Input placeholder="Video URL o Link Directo" className="h-10 text-xs font-mono rounded-xl border-white/5 bg-white/5" value={lesson.videoUrl} onChange={e => handleLessonChange(idx, "videoUrl", e.target.value)} />
+                        <div className="flex gap-2">
+                           <Input placeholder="Video URL o Link Directo" className="flex-1 h-10 text-xs font-mono rounded-xl border-white/5 bg-white/5" value={lesson.videoUrl} onChange={e => handleLessonChange(idx, "videoUrl", e.target.value)} />
+                           <Label className="h-10 px-4 flex items-center justify-center bg-white/5 border border-white/10 rounded-xl cursor-pointer hover:bg-white/10 transition-all shrink-0">
+                             <Upload className="w-4 h-4" />
+                             <input type="file" accept="video/*" className="hidden" onChange={(e) => handleFileUpload(idx, e.target.files?.[0] || null)} />
+                           </Label>
+                        </div>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="flex gap-2">
-                   {editingCourseId && (
-                     <Button variant="outline" onClick={() => {
-                       setEditingCourseId(null);
-                       setNewCourse({ title: "", description: "", teacherId: "", bannerUrl: "", lessons: [{ id: "1", title: "", videoUrl: "", order: 1 }] });
-                     }} className="flex-1 rounded-2xl h-12 uppercase text-[10px] font-800 tracking-widest">Cancelar</Button>
-                   )}
-                   <Button onClick={addCourse} className="flex-[2] bg-indigo-600 hover:bg-indigo-500 rounded-2xl h-12 uppercase text-[10px] font-800 tracking-widest shadow-glow">
-                     {editingCourseId ? "Guardar Cambios" : "Publicar Curso"}
+                <div className="flex flex-col gap-2">
+                   <div className="flex gap-2">
+                      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+                        <DialogTrigger 
+                          render={
+                            <Button 
+                              variant="outline"
+                              disabled={!newCourse.title || newCourse.lessons.length === 0}
+                              className="flex-1 rounded-2xl h-12 uppercase text-[10px] font-800 tracking-widest bg-white/5 border-white/10"
+                            />
+                          }
+                        >
+                          <Eye className="w-4 h-4 mr-2" /> Vista Previa
+                        </DialogTrigger>
+                        <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] p-0 overflow-hidden bg-black border-none">
+                           <DialogHeader className="p-4 bg-zinc-950 border-b border-white/10 shrink-0">
+                             <DialogTitle className="uppercase tracking-tighter font-800 italic text-indigo-400">Preview: {newCourse.title || "Untitled Course"}</DialogTitle>
+                           </DialogHeader>
+                           <div className="flex-1 overflow-auto p-4 md:p-12">
+                              <CoursePlayer 
+                                course={{...newCourse, id: "preview", createdAt: new Date().toISOString()} as any}
+                                enrollment={{ id: "preview-enroll", userId: user.uid, courseId: "preview", completedLessonIds: [], isFinished: false }} 
+                                studentName={user.fullName}
+                                teachers={teachers}
+                                specialties={specialties}
+                                onBack={() => setIsPreviewOpen(false)} 
+                              />
+                           </div>
+                        </DialogContent>
+                      </Dialog>
+
+                      {editingCourseId && (
+                        <Button variant="outline" onClick={() => {
+                          setEditingCourseId(null);
+                          setNewCourse({ title: "", description: "", teacherId: "", bannerUrl: "", lessons: [{ id: "1", title: "", videoUrl: "", order: 1 }] });
+                        }} className="flex-1 rounded-2xl h-12 uppercase text-[10px] font-800 tracking-widest">Cancelar</Button>
+                      )}
+                   </div>
+                   <Button onClick={addCourse} className="w-full bg-indigo-600 hover:bg-indigo-500 rounded-2xl h-14 uppercase text-[10px] font-800 tracking-widest shadow-glow">
+                     {editingCourseId ? "Guardar Cambios" : "Publicar Curso_"}
                    </Button>
                 </div>
               </CardContent>
@@ -389,7 +494,7 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
               <Card className="lg:col-span-1 glass border-white/5">
                  <CardHeader>
-                    <CardTitle>Nueva Especialidad</CardTitle>
+                    <CardTitle>{editingSpecialtyId ? "Editar Especialidad" : "Nueva Especialidad"}</CardTitle>
                     <CardDescription>Agrega categorías para clasificar a tus profesores.</CardDescription>
                  </CardHeader>
                  <CardContent className="space-y-4">
@@ -397,7 +502,17 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
                        <Label>Nombre de la Especialidad</Label>
                        <Input value={newSpecialty} onChange={e => setNewSpecialty(e.target.value)} placeholder="Ej: Programación React" className="rounded-xl border-white/5 bg-white/5" />
                     </div>
-                    <Button onClick={addSpecialty} className="w-full bg-indigo-600 rounded-2xl h-12 uppercase text-[10px] font-800 tracking-widest">Agregar Especialidad</Button>
+                    <div className="flex gap-2">
+                       {editingSpecialtyId && (
+                         <Button variant="outline" onClick={() => {
+                            setEditingSpecialtyId(null);
+                            setNewSpecialty("");
+                         }} className="flex-1 h-12">Cancelar</Button>
+                       )}
+                       <Button onClick={addSpecialty} className="flex-[2] bg-indigo-600 rounded-2xl h-12 uppercase text-[10px] font-800 tracking-widest">
+                          {editingSpecialtyId ? "Actualizar" : "Agregar Especialidad"}
+                       </Button>
+                    </div>
                  </CardContent>
               </Card>
 
@@ -410,9 +525,14 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
                        {specialties.map(s => (
                           <div key={s.id} className="p-4 glass rounded-2xl border-white/5 flex justify-between items-center group hover:border-indigo-500/30 transition-all">
                              <span className="font-bold tracking-tight uppercase text-sm">{s.name}</span>
-                             <Button variant="ghost" size="icon" className="h-8 w-8 text-white/20 hover:text-red-500 transition-colors" onClick={() => deleteSpecialty(s.id)}>
-                                <Trash2 className="w-4 h-4" />
-                             </Button>
+                             <div className="flex gap-1">
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-white/20 hover:text-white" onClick={() => editSpecialty(s)}>
+                                   <Edit className="w-3 h-3" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-white/20 hover:text-red-500 transition-colors" onClick={() => deleteSpecialty(s.id)}>
+                                   <Trash2 className="w-3 h-3" />
+                                </Button>
+                             </div>
                           </div>
                        ))}
                        {specialties.length === 0 && <p className="col-span-3 text-center py-10 opacity-20 font-800 uppercase text-[10px] tracking-[0.3em]">No hay especialidades_</p>}

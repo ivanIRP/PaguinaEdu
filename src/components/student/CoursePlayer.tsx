@@ -49,9 +49,13 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
     if (enrollment.completedLessonIds.includes(lessonId)) return;
 
     const newCompleted = [...enrollment.completedLessonIds, lessonId];
-    await updateDoc(doc(db, "enrollments", enrollment.id), {
-      completedLessonIds: arrayUnion(lessonId)
-    });
+    
+    // Only update DB if not in preview mode
+    if (course.id !== "preview") {
+      await updateDoc(doc(db, "enrollments", enrollment.id), {
+        completedLessonIds: arrayUnion(lessonId)
+      });
+    }
     
     setEnrollment(prev => ({ ...prev, completedLessonIds: newCompleted }));
 
@@ -66,12 +70,16 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
   const handleFinishCourse = async () => {
     if (rating === 0 || !comment) return;
     setIsSubmitting(true);
-    await updateDoc(doc(db, "enrollments", enrollment.id), {
-      isFinished: true,
-      rating,
-      comment,
-      finishedAt: serverTimestamp()
-    });
+    
+    if (course.id !== "preview") {
+      await updateDoc(doc(db, "enrollments", enrollment.id), {
+        isFinished: true,
+        rating,
+        comment,
+        finishedAt: serverTimestamp()
+      });
+    }
+    
     setEnrollment(prev => ({ ...prev, isFinished: true, rating, comment }));
     setIsRatingOpen(false);
     setIsSubmitting(false);

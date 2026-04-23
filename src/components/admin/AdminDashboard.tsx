@@ -205,20 +205,20 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
       </header>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="glass p-1 h-auto w-fit mb-12 gap-1">
-          <TabsTrigger value="overview" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-6 py-2 transition-all uppercase text-[10px] font-bold tracking-widest flex gap-2">
+        <TabsList className="glass p-1 h-auto w-full md:w-fit mb-12 gap-1 overflow-x-auto justify-start md:justify-center no-scrollbar">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-6 py-2 transition-all uppercase text-[10px] font-bold tracking-widest flex gap-2 shrink-0">
             <LayoutDashboard className="w-3 h-3" /> Resumen
           </TabsTrigger>
-          <TabsTrigger value="teachers" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-6 py-2 transition-all uppercase text-[10px] font-bold tracking-widest flex gap-2">
+          <TabsTrigger value="teachers" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-6 py-2 transition-all uppercase text-[10px] font-bold tracking-widest flex gap-2 shrink-0">
             <Users className="w-3 h-3" /> Profesores
           </TabsTrigger>
-          <TabsTrigger value="courses" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-6 py-2 transition-all uppercase text-[10px] font-bold tracking-widest flex gap-2">
+          <TabsTrigger value="courses" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-6 py-2 transition-all uppercase text-[10px] font-bold tracking-widest flex gap-2 shrink-0">
             <BookOpen className="w-3 h-3" /> Cursos
           </TabsTrigger>
-          <TabsTrigger value="specialties" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-6 py-2 transition-all uppercase text-[10px] font-bold tracking-widest flex gap-2">
+          <TabsTrigger value="specialties" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-6 py-2 transition-all uppercase text-[10px] font-bold tracking-widest flex gap-2 shrink-0">
             <Settings className="w-3 h-3" /> Especialidades
           </TabsTrigger>
-          <TabsTrigger value="stats" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-6 py-2 transition-all uppercase text-[10px] font-bold tracking-widest flex gap-2">
+          <TabsTrigger value="stats" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-6 py-2 transition-all uppercase text-[10px] font-bold tracking-widest flex gap-2 shrink-0">
             <BarChart3 className="w-3 h-3" /> Reportes
           </TabsTrigger>
         </TabsList>

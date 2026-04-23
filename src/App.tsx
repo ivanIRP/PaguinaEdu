@@ -27,16 +27,18 @@ function MainLayout({ user }: { user: UserProfile }) {
   useEffect(() => {
     // Detect mobile device
     const checkMobile = () => {
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
+      try {
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const nav = window.navigator as any;
+        const isStandalone = nav?.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
 
-      // Only show if mobile AND not already installed/standalone
-      if (isMobile && !isStandalone) {
-        console.log("Mobile device detected, showing PWA prompt...");
-        // Small delay to ensure UI is ready
-        setTimeout(() => {
-          setIsMobileAlertOpen(true);
-        }, 1500);
+        if (isMobile && !isStandalone) {
+          setTimeout(() => {
+            setIsMobileAlertOpen(true);
+          }, 2000);
+        }
+      } catch (err) {
+        console.error("checkMobile failed:", err);
       }
     };
 

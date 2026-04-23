@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
 
 @theme {
@@ -144,6 +145,3 @@
     @apply font-bold tracking-tighter uppercase;
   }
 }
-
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";

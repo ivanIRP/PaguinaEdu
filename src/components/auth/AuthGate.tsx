@@ -34,41 +34,38 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
   const [profileName, setProfileName] = useState("");
 
   useEffect(() => {
-    // Log project ID to help user verify they are in the correct console
-    if (auth.app?.options?.projectId) {
-      console.log("Firebase initialized with project:", auth.app.options.projectId);
-    }
-    
-    // Safety timeout to prevent infinite loading
+    console.log("AuthGate: Initializing...");
+    // Safety timeout to prevent infinite loading if Firebase hangs
     const timeout = setTimeout(() => {
       if (loading) {
-        console.warn("AuthGate: Initialization timeout reached, forcing loading false.");
+        console.warn("AuthGate: Auth check timed out. Forcing content display.");
         setLoading(false);
       }
-    }, 8000); // 8 seconds is plenty for most connections
+    }, 10000);
 
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      console.log("AuthGate: Auth state changed:", firebaseUser?.uid || "null");
       clearTimeout(timeout);
       try {
         setLoading(true);
         if (firebaseUser) {
-          console.log("AuthGate: Authenticated user found:", firebaseUser.uid);
+          console.log("AuthGate: Fetching user doc...");
           const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data() as UserProfile;
+            console.log("AuthGate: User profile found:", userData.role);
             setUser(userData);
-            // If name is placeholder, prompt for change
             if (userData.fullName === "Usuario" || !userData.fullName) {
-               setIsFinishingProfile(true);
+              setIsFinishingProfile(true);
             }
           } else {
-            // Create new user profile for first-time login
+            console.log("AuthGate: New user detected.");
             const isAdminEmail = firebaseUser.email === "ivatar1066@gmail.com";
             const initialName = firebaseUser.displayName || "";
             
             if (!initialName) {
               setIsFinishingProfile(true);
-              setUser(null); // Ensure user is null if profile not finished
+              setUser(null);
             } else {
               const newProfile: UserProfile = {
                 uid: firebaseUser.uid,
@@ -83,7 +80,6 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
             }
           }
         } else {
-          console.log("AuthGate: No authenticated user.");
           setUser(null);
           setIsFinishingProfile(false);
         }
@@ -158,6 +154,23 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
       setAuthLoading(false);
     }
   };
+
+  if (error && !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#050505] p-6 text-center">
+        <div className="glass p-8 rounded-[32px] border-red-500/20 max-w-sm">
+          <h2 className="text-xl font-bold text-red-500 mb-4 uppercase tracking-tighter italic">Error de Carga_</h2>
+          <p className="text-xs text-zinc-400 mb-6 leading-relaxed font-medium">{error}</p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-800 uppercase tracking-widest text-[10px] h-12 rounded-xl"
+          >
+            Reintentar Carga_
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

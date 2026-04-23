@@ -59,13 +59,15 @@ export function Navbar({ user, onToggleTheme, currentTheme, onInstall, isInstall
           </Button>
 
           <DropdownMenu>
-            <DropdownMenuTrigger render={<Button variant="ghost" className="relative h-10 w-10 rounded-full" />}>
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={user.photoURL} alt={user.fullName} />
-                <AvatarFallback>{user.fullName.substring(0, 2).toUpperCase()}</AvatarFallback>
-              </Avatar>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={user.photoURL} alt={user.fullName} />
+                  <AvatarFallback>{user.fullName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                </Avatar>
+              </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end">
+            <DropdownMenuContent className="w-56 glass border-white/10" align="end">
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">

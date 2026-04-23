@@ -10,7 +10,21 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Force unregister any existing service workers to clear broken cache
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for(let registration of registrations) {
+            registration.unregister().then(function() {
+              console.log('Service Worker unregistered successfully');
+            });
+          }
+        });
+      }
+    </script>
     <script type="module" src="/src/main.tsx"></script>
+    <!-- Service Worker disabled to prevent caching issues in development -->
+    <!--
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -18,6 +32,7 @@
         });
       }
     </script>
+    -->
   </body>
 </html>
 

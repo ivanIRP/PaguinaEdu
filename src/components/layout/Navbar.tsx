@@ -18,9 +18,11 @@ interface NavbarProps {
   user: UserProfile;
   onToggleTheme: () => void;
   currentTheme: string;
+  onInstall?: () => void;
+  isInstallAvailable?: boolean;
 }
 
-export function Navbar({ user, onToggleTheme, currentTheme }: NavbarProps) {
+export function Navbar({ user, onToggleTheme, currentTheme, onInstall, isInstallAvailable }: NavbarProps) {
   return (
     <nav className="border-b border-white/5 glass sticky top-0 z-50">
       <div className="container mx-auto px-6 h-20 flex items-center justify-between">
@@ -40,6 +42,18 @@ export function Navbar({ user, onToggleTheme, currentTheme }: NavbarProps) {
             <span className="hover:text-white cursor-pointer transition-colors">Courses</span>
             <span className="hover:text-white cursor-pointer transition-colors">Resources</span>
           </div>
+          
+          {isInstallAvailable && onInstall && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onInstall}
+              className="hidden sm:flex border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 gap-2 h-9 px-4 rounded-xl uppercase text-[10px] font-bold tracking-widest transition-all"
+            >
+              <Download className="w-3 h-3" /> Instalar App
+            </Button>
+          )}
+
           <Button variant="ghost" size="icon" onClick={onToggleTheme} className="rounded-full">
             {currentTheme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
           </Button>

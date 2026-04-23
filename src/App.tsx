@@ -84,7 +84,13 @@ function MainLayout({ user }: { user: UserProfile }) {
 
   return (
     <div className="min-h-screen bg-background transition-colors duration-300">
-      <Navbar user={user} onToggleTheme={toggleTheme} currentTheme={theme} />
+      <Navbar 
+        user={user} 
+        onToggleTheme={toggleTheme} 
+        currentTheme={theme} 
+        onInstall={handleInstallClick}
+        isInstallAvailable={!!deferredPrompt}
+      />
       <main className="container mx-auto py-4 md:py-8 px-4">
         {user.role === "admin" ? (
           <AdminDashboard user={user} />
@@ -121,12 +127,21 @@ function MainLayout({ user }: { user: UserProfile }) {
 
           <DialogFooter className="flex flex-col gap-2">
             {deferredPrompt ? (
-              <Button 
-                className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-800 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2"
-                onClick={handleInstallClick}
-              >
-                <Download className="w-4 h-4" /> Instalar Ahora_
-              </Button>
+              <>
+                <Button 
+                  className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-800 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2"
+                  onClick={handleInstallClick}
+                >
+                  <Download className="w-4 h-4" /> Instalar Ahora_
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="w-full text-zinc-500 text-[10px] font-bold uppercase tracking-widest hover:text-white"
+                  onClick={() => setIsMobileAlertOpen(false)}
+                >
+                  Continuar en el navegador
+                </Button>
+              </>
             ) : (
               <Button 
                 className="w-full h-12 bg-zinc-800 hover:bg-zinc-700 text-white font-800 uppercase text-[10px] tracking-widest rounded-xl"

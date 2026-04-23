@@ -26,18 +26,27 @@ function MainLayout({ user }: { user: UserProfile }) {
 
   useEffect(() => {
     // Detect mobile device
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    if (isMobile) {
-      setIsMobileAlertOpen(true);
-    }
+    const checkMobile = () => {
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isStandalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
+
+      // Only show if mobile AND not already installed/standalone
+      if (isMobile && !isStandalone) {
+        console.log("Mobile device detected, showing PWA prompt...");
+        // Small delay to ensure UI is ready
+        setTimeout(() => {
+          setIsMobileAlertOpen(true);
+        }, 1500);
+      }
+    };
+
+    checkMobile();
 
     // Listen for PWA install prompt
     const handleBeforeInstallPrompt = (e: any) => {
-      // Prevent the mini-infobar from appearing on mobile
+      console.log("PWA beforeinstallprompt event captured");
       e.preventDefault();
-      // Stash the event so it can be triggered later.
       setDeferredPrompt(e);
-      // Update UI notify the user they can install the PWA
       setIsMobileAlertOpen(true);
     };
 

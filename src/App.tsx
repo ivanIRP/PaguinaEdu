@@ -11,68 +11,13 @@ import { AdminDashboard } from "./components/admin/AdminDashboard";
 import { StudentDashboard } from "./components/student/StudentDashboard";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "./lib/firebase";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./components/ui/dialog";
-import { Smartphone, Download, CheckCircle } from "lucide-react";
-import { Button } from "./components/ui/button";
 
 function MainLayout({ user }: { user: UserProfile }) {
   const [theme, setTheme] = useState(user.theme || "dark");
-  const [isMobileAlertOpen, setIsMobileAlertOpen] = useState(false);
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
-
-  useEffect(() => {
-    // Detect mobile device
-    const checkMobile = () => {
-      try {
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const nav = window.navigator as any;
-        const isStandalone = nav?.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-
-        if (isMobile && !isStandalone) {
-          setTimeout(() => {
-            setIsMobileAlertOpen(true);
-          }, 2000);
-        }
-      } catch (err) {
-        console.error("checkMobile failed:", err);
-      }
-    };
-
-    checkMobile();
-
-    // Listen for PWA install prompt
-    const handleBeforeInstallPrompt = (e: any) => {
-      console.log("PWA beforeinstallprompt event captured");
-      e.preventDefault();
-      setDeferredPrompt(e);
-      setIsMobileAlertOpen(true);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-
-    // Show the install prompt
-    deferredPrompt.prompt();
-    
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to the install prompt: ${outcome}`);
-    
-    // We've used the prompt, and can't use it again, throw it away
-    setDeferredPrompt(null);
-    setIsMobileAlertOpen(false);
-  };
 
   const toggleTheme = async () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -90,8 +35,8 @@ function MainLayout({ user }: { user: UserProfile }) {
         user={user} 
         onToggleTheme={toggleTheme} 
         currentTheme={theme} 
-        onInstall={handleInstallClick}
-        isInstallAvailable={!!deferredPrompt}
+        onInstall={() => {}}
+        isInstallAvailable={false}
       />
       <main className="container mx-auto py-4 md:py-8 px-4">
         {user.role === "admin" ? (
@@ -100,66 +45,6 @@ function MainLayout({ user }: { user: UserProfile }) {
           <StudentDashboard user={user} />
         )}
       </main>
-
-      {/* Mobile Alert / PWA Prompt */}
-      <Dialog open={isMobileAlertOpen} onOpenChange={setIsMobileAlertOpen}>
-        <DialogContent className="glass border-white/10 max-w-[90vw] md:max-w-md bg-zinc-950/90 backdrop-blur-2xl rounded-[32px]">
-          <DialogHeader className="flex flex-col items-center gap-4 text-center">
-            <div className="bg-indigo-600/20 p-4 rounded-2xl border border-indigo-500/30">
-              <Smartphone className="w-8 h-8 text-indigo-400" />
-            </div>
-            <DialogTitle className="text-3xl font-800 tracking-tighter uppercase italic leading-none">
-              EduStream en tu Móvil_
-            </DialogTitle>
-            <DialogDescription className="text-sm text-zinc-400 font-medium leading-relaxed">
-              Para una mejor experiencia, puedes instalar EduStream como una aplicación móvil.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="flex items-start gap-3 p-3 glass rounded-xl border-white/5">
-              <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
-              <p className="text-xs text-zinc-300">Acceso rápido desde tu pantalla de inicio.</p>
-            </div>
-            <div className="flex items-start gap-3 p-3 glass rounded-xl border-white/5">
-              <CheckCircle className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
-              <p className="text-xs text-zinc-300">Experiencia de aprendizaje fluida y a pantalla completa.</p>
-            </div>
-          </div>
-
-          <DialogFooter className="flex flex-col gap-2">
-            {deferredPrompt ? (
-              <>
-                <Button 
-                  className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-800 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2"
-                  onClick={handleInstallClick}
-                >
-                  <Download className="w-4 h-4" /> Instalar Ahora_
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  className="w-full text-zinc-500 text-[10px] font-bold uppercase tracking-widest hover:text-white"
-                  onClick={() => setIsMobileAlertOpen(false)}
-                >
-                  Continuar en el navegador
-                </Button>
-              </>
-            ) : (
-              <Button 
-                className="w-full h-12 bg-zinc-800 hover:bg-zinc-700 text-white font-800 uppercase text-[10px] tracking-widest rounded-xl"
-                onClick={() => setIsMobileAlertOpen(false)}
-              >
-                Comprendido_
-              </Button>
-            )}
-            {!deferredPrompt && (
-              <p className="text-[9px] text-zinc-500 text-center uppercase tracking-widest font-bold">
-                Usa "Añadir a pantalla de inicio" en tu navegador
-              </p>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

@@ -4,35 +4,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EduStream Learning</title>
-    <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="theme-color" content="#6366f1" />
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135673.png" />
   </head>
   <body>
     <div id="root"></div>
     <script>
-      // Force unregister any existing service workers to clear broken cache
+      // Aggressively unregister all service workers and clear caches to fix corruption errors
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(registrations) {
           for(let registration of registrations) {
-            registration.unregister().then(function() {
-              console.log('Service Worker unregistered successfully');
-            });
+            registration.unregister();
           }
+        });
+      }
+      
+      // Clear caches if supported
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          for (let name of names) caches.delete(name);
         });
       }
     </script>
     <script type="module" src="/src/main.tsx"></script>
-    <!-- Service Worker disabled to prevent caching issues in development -->
-    <!--
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js');
-        });
-      }
-    </script>
-    -->
   </body>
 </html>
 

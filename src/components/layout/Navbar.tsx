@@ -36,32 +36,21 @@ export function Navbar({ user, onToggleTheme, currentTheme, onInstall, isInstall
           </div>
         </div>
 
-        <div className="flex items-center gap-6">
-          <div className="hidden md:flex items-center gap-8 text-[11px] font-bold uppercase tracking-widest text-white/40">
+        <div className="flex items-center gap-2 md:gap-6">
+          <div className="hidden lg:flex items-center gap-8 text-[11px] font-bold uppercase tracking-widest text-white/40">
             <span className="text-white">Learning</span>
             <span className="hover:text-white cursor-pointer transition-colors">Courses</span>
             <span className="hover:text-white cursor-pointer transition-colors">Resources</span>
           </div>
           
-          {isInstallAvailable && onInstall && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onInstall}
-              className="hidden sm:flex border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 gap-2 h-9 px-4 rounded-xl uppercase text-[10px] font-bold tracking-widest transition-all"
-            >
-              <Download className="w-3 h-3" /> Instalar App
-            </Button>
-          )}
-
-          <Button variant="ghost" size="icon" onClick={onToggleTheme} className="rounded-full">
-            {currentTheme === "light" ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+          <Button variant="ghost" size="icon" onClick={onToggleTheme} className="rounded-full w-9 h-9 md:w-10 md:h-10">
+            {currentTheme === "light" ? <Moon className="w-4 h-4 md:w-5 md:h-5" /> : <Sun className="w-4 h-4 md:w-5 md:h-5" />}
           </Button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                <Avatar className="h-10 w-10">
+              <Button variant="ghost" className="relative h-9 w-9 md:h-10 md:h-10 rounded-full">
+                <Avatar className="h-9 w-9 md:h-10 md:h-10">
                   <AvatarImage src={user.photoURL} alt={user.fullName} />
                   <AvatarFallback>{user.fullName.substring(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
@@ -79,6 +68,10 @@ export function Navbar({ user, onToggleTheme, currentTheme, onInstall, isInstall
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem className="lg:hidden">
+                  <BookOpen className="mr-2 h-4 w-4" />
+                  Cursos
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => {}}>
                   <User className="mr-2 h-4 w-4" />
                   Perfil

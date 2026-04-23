@@ -3,43 +3,39 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>EduStream Learning</title>
   </head>
   <body>
     <div id="root"></div>
     <script>
-      console.log('App initialization - Current Origin:', window.location.origin);
-      
-      // Aggressively unregister all service workers and clear caches
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          if (registrations.length > 0) {
-            console.log('Found ' + registrations.length + ' service workers. Unregistering all...');
-            for(let registration of registrations) {
-              registration.unregister().then(() => {
-                console.log('Service Worker unregistered.');
-              });
-            }
-          }
-        });
-      }
-      
-      // Clear all caches
-      if ('caches' in window) {
-        caches.keys().then(function(names) {
-          for (let name of names) {
-            console.log('Deleting cache:', name);
-            caches.delete(name);
-          }
-        });
-      }
-      
-      // Force reload if we find we are stuck with old assets
-      window.addEventListener('error', function(e) {
-        if (e.target && (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK')) {
-          console.warn('Asset load error detected. Attempting to clear storage and retry...', e.target.src || e.target.href);
+      // Aggressively clear EVERYTHING to fix "Corrupted Content" and "Unknown Host" errors from old domain
+      (function() {
+        console.log('Cleaning environment...');
+        
+        // 1. Unregister Service Workers
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(regs => {
+            for(let reg of regs) reg.unregister();
+          });
         }
-      }, true);
+
+        // 2. Clear Caches
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            for (let name of names) caches.delete(name);
+          });
+        }
+
+        // 3. Clear Storage
+        try {
+          sessionStorage.clear();
+          // We don't clear localStorage because it might contain valid app data (like theme),
+          // but if errors persist, we'll suggest a full reset.
+        } catch(e) {}
+      })();
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>

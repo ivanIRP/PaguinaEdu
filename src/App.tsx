@@ -27,6 +27,7 @@ import { Button } from "./components/ui/button";
 function MainLayout({ user }: { user: UserProfile }) {
   const [theme, setTheme] = useState(user.theme || "dark");
   const [isMobileAlertOpen, setIsMobileAlertOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
@@ -38,7 +39,38 @@ function MainLayout({ user }: { user: UserProfile }) {
     if (isMobile) {
       setIsMobileAlertOpen(true);
     }
+
+    // Listen for PWA install prompt
+    const handleBeforeInstallPrompt = (e: any) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      setDeferredPrompt(e);
+      // Update UI notify the user they can install the PWA
+      setIsMobileAlertOpen(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+
+    // Show the install prompt
+    deferredPrompt.prompt();
+    
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to the install prompt: ${outcome}`);
+    
+    // We've used the prompt, and can't use it again, throw it away
+    setDeferredPrompt(null);
+    setIsMobileAlertOpen(false);
+  };
 
   const toggleTheme = async () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -88,15 +120,26 @@ function MainLayout({ user }: { user: UserProfile }) {
           </div>
 
           <DialogFooter className="flex flex-col gap-2">
-            <Button 
-              className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-800 uppercase text-[10px] tracking-widest rounded-xl shadow-glow"
-              onClick={() => setIsMobileAlertOpen(false)}
-            >
-              Comprendido_
-            </Button>
-            <p className="text-[9px] text-zinc-500 text-center uppercase tracking-widest font-bold">
-              Usa "Añadir a pantalla de inicio" en tu navegador
-            </p>
+            {deferredPrompt ? (
+              <Button 
+                className="w-full h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-800 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2"
+                onClick={handleInstallClick}
+              >
+                <Download className="w-4 h-4" /> Instalar Ahora_
+              </Button>
+            ) : (
+              <Button 
+                className="w-full h-12 bg-zinc-800 hover:bg-zinc-700 text-white font-800 uppercase text-[10px] tracking-widest rounded-xl"
+                onClick={() => setIsMobileAlertOpen(false)}
+              >
+                Comprendido_
+              </Button>
+            )}
+            {!deferredPrompt && (
+              <p className="text-[9px] text-zinc-500 text-center uppercase tracking-widest font-bold">
+                Usa "Añadir a pantalla de inicio" en tu navegador
+              </p>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

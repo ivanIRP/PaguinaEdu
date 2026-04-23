@@ -3,21 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { AuthGate } from "./components/auth/AuthGate";
 import { useState, useEffect } from "react";
+import { AuthGate } from "./components/auth/AuthGate";
 import { UserProfile } from "./types";
 import { Navbar } from "./components/layout/Navbar";
 import { AdminDashboard } from "./components/admin/AdminDashboard";
 import { StudentDashboard } from "./components/student/StudentDashboard";
-
-export default function App() {
-  return (
-    <AuthGate>
-      {(user) => <MainLayout user={user} />}
-    </AuthGate>
-  );
-}
-
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "./lib/firebase";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./components/ui/dialog";
@@ -159,6 +150,14 @@ function MainLayout({ user }: { user: UserProfile }) {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthGate>
+      {(user) => <MainLayout user={user} />}
+    </AuthGate>
   );
 }
 

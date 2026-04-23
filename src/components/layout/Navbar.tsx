@@ -2,7 +2,7 @@ import { Role, UserProfile } from "../../types";
 import { auth } from "../../lib/firebase";
 import { signOut } from "firebase/auth";
 import { Button } from "../ui/button";
-import { LogOut, Sun, Moon, GraduationCap, User } from "lucide-react";
+import { LogOut, Sun, Moon, GraduationCap, User, Smartphone, Download } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -35,47 +35,56 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
 
   useEffect(() => {
     // Log project ID to help user verify they are in the correct console
-    console.log("Firebase initialized with project:", auth.app.options.projectId);
+    if (auth.app?.options?.projectId) {
+      console.log("Firebase initialized with project:", auth.app.options.projectId);
+    }
     
-    return onAuthStateChanged(auth, async (firebaseUser) => {
-      setLoading(true);
-      if (firebaseUser) {
-        const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data() as UserProfile;
-          setUser(userData);
-          // If name is placeholder, prompt for change
-          if (userData.fullName === "Usuario" || !userData.fullName) {
-             setIsFinishingProfile(true);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      try {
+        setLoading(true);
+        if (firebaseUser) {
+          const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+          if (userDoc.exists()) {
+            const userData = userDoc.data() as UserProfile;
+            setUser(userData);
+            // If name is placeholder, prompt for change
+            if (userData.fullName === "Usuario" || !userData.fullName) {
+               setIsFinishingProfile(true);
+            }
+          } else {
+            // Create new user profile for first-time login
+            const isAdminEmail = firebaseUser.email === "ivatar1066@gmail.com";
+            const initialName = firebaseUser.displayName || "";
+            
+            if (!initialName) {
+              setIsFinishingProfile(true);
+              setUser(null); // Ensure user is null if profile not finished
+            } else {
+              const newProfile: UserProfile = {
+                uid: firebaseUser.uid,
+                fullName: initialName,
+                email: firebaseUser.email || "",
+                role: isAdminEmail ? "admin" : "student",
+                photoURL: firebaseUser.photoURL || null,
+                theme: "light",
+              } as UserProfile;
+              await setDoc(doc(db, "users", firebaseUser.uid), newProfile);
+              setUser(newProfile);
+            }
           }
         } else {
-          // Create new user profile for first-time login
-          const isAdminEmail = firebaseUser.email === "ivatar1066@gmail.com";
-          const initialName = firebaseUser.displayName || "";
-          
-          if (!initialName) {
-            setIsFinishingProfile(true);
-            setLoading(false);
-            return;
-          }
-
-          const newProfile: UserProfile = {
-            uid: firebaseUser.uid,
-            fullName: initialName,
-            email: firebaseUser.email || "",
-            role: isAdminEmail ? "admin" : "student",
-            photoURL: firebaseUser.photoURL || null,
-            theme: "light",
-          } as UserProfile;
-          await setDoc(doc(db, "users", firebaseUser.uid), newProfile);
-          setUser(newProfile);
+          setUser(null);
+          setIsFinishingProfile(false);
         }
-      } else {
-        setUser(null);
-        setIsFinishingProfile(false);
+      } catch (err: any) {
+        console.error("AuthGate initialization error:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
+
+    return () => unsubscribe();
   }, []);
 
   const finishProfile = async () => {

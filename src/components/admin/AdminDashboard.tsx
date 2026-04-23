@@ -320,7 +320,6 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
                               <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600" onClick={async () => {
                                  if(confirm("¿Eliminar profesor?")) {
                                     await deleteDoc(doc(db, "teachers", t.id));
-                                    fetchData();
                                  }
                               }}>
                                  <Trash2 className="w-4 h-4" />

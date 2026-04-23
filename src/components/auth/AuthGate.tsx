@@ -39,10 +39,20 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
       console.log("Firebase initialized with project:", auth.app.options.projectId);
     }
     
+    // Safety timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      if (loading) {
+        console.warn("AuthGate: Initialization timeout reached, forcing loading false.");
+        setLoading(false);
+      }
+    }, 8000); // 8 seconds is plenty for most connections
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      clearTimeout(timeout);
       try {
         setLoading(true);
         if (firebaseUser) {
+          console.log("AuthGate: Authenticated user found:", firebaseUser.uid);
           const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
           if (userDoc.exists()) {
             const userData = userDoc.data() as UserProfile;
@@ -73,6 +83,7 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
             }
           }
         } else {
+          console.log("AuthGate: No authenticated user.");
           setUser(null);
           setIsFinishingProfile(false);
         }
@@ -84,7 +95,10 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
       }
     });
 
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      clearTimeout(timeout);
+    };
   }, []);
 
   const finishProfile = async () => {

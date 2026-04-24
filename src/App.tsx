@@ -132,8 +132,12 @@ function MainLayout({ user }: { user: UserProfile }) {
           setDeferredPrompt(null);
         }
       } else {
-        // Fallback for missing prompt
-        alert("El sistema de instalación nativo no respondió. Por favor, usa la opción 'Instalar aplicación' en el menú de tu navegador (⋮).");
+        // Fallback for missing prompt - provide clearer instructions
+        if (platform === "android") {
+          alert("El instalador rápido está tardando en responder.\n\nPrueba esto:\n1. Pulsa los tres puntos (⋮) arriba a la derecha.\n2. Selecciona 'Instalar aplicación' o 'Añadir a pantalla de inicio'.");
+        } else {
+          alert("El sistema de instalación nativo no respondió. Por favor, usa la opción 'Instalar aplicación' o 'Añadir a pantalla de inicio' en el menú (⋮) de tu navegador.");
+        }
       }
     } catch (err) {
       console.error("Installation failed:", err);

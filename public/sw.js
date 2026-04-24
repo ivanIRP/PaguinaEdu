@@ -44,7 +44,7 @@ self.addEventListener('fetch', (event) => {
     fetch(event.request)
       .then((response) => {
         // Cache the successful response
-        if (response.status === 200) {
+        if (response.status === 200 || response.type === 'opaque') {
           const responseToCache = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
             cache.put(event.request, responseToCache);
@@ -57,8 +57,10 @@ self.addEventListener('fetch', (event) => {
           if (cachedResponse) {
             return cachedResponse;
           }
-          // If neither network nor cache works, and it's a navigation request, we could show an offline page
-          // For now, let's just let it fail naturally or return a generic error if it's a response
+          // If navigation to a page fails, return the index.html for SPA support offline
+          if (event.request.mode === 'navigate') {
+            return caches.match('/');
+          }
           return new Response('Offline and not cached', { status: 503, statusText: 'Service Unavailable' });
         });
       })

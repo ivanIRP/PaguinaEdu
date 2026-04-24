@@ -1,14 +1,17 @@
 {
-  "name": "EduStream Learning",
+  "name": "EduStream Learning Platform",
   "short_name": "EduStream",
-  "description": "Plataforma de aprendizaje core v2.4",
-  "id": "com.edustream.learning",
+  "description": "Plataforma de aprendizaje inteligente con acceso offline y notificaciones.",
+  "id": "com.edustream.learning.v3",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "portrait",
   "background_color": "#09090b",
   "theme_color": "#6366f1",
   "scope": "/",
+  "categories": ["education", "productivity"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3135/3135673.png",

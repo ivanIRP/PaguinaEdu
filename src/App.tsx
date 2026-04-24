@@ -12,14 +12,18 @@ import { StudentDashboard } from "./components/student/StudentDashboard";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "./lib/firebase";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./components/ui/dialog";
-import { Smartphone, Download, CheckCircle, ExternalLink, Apple, X } from "lucide-react";
+import { Smartphone, Download, CheckCircle, ExternalLink, Apple, X, QrCode, ShieldCheck, Zap } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { motion, AnimatePresence } from "motion/react";
+import { InstallationScanner } from "./components/pwa/InstallationScanner";
+import { QRCodeBridge } from "./components/pwa/QRCodeBridge";
 
 function MainLayout({ user }: { user: UserProfile }) {
   const [theme, setTheme] = useState(user.theme || "dark");
   const [isMobileAlertOpen, setIsMobileAlertOpen] = useState(false);
   const [showIOSGuide, setShowIOSGuide] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [showQRCode, setShowQRCode] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [platform, setPlatform] = useState<"ios" | "android" | "other">("other");
 
@@ -85,28 +89,27 @@ function MainLayout({ user }: { user: UserProfile }) {
     const isInIframe = window.self !== window.top;
     
     if (isInIframe) {
-      // In iframe, we can't show the install prompt. Must open in new tab.
       window.open(window.location.href, '_blank');
       return;
     }
 
-    if (!deferredPrompt && platform !== "ios") {
-      // If we are in a tab but prompt hasn't fired yet
-      const nav = window.navigator as any;
-      const isStandalone = nav?.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-      
-      if (isStandalone) {
-        alert("¡EduStream ya está instalado y funcionando como aplicación!");
-        setIsMobileAlertOpen(false);
-        return;
-      }
-
-      alert("El instalador automático se está preparando. Si no aparece en 5 segundos, por favor usa la opción 'Instalar aplicación' o 'Añadir a pantalla de inicio' en el menú (⋮) de tu navegador.");
-      setIsMobileAlertOpen(false);
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (!isMobile && !isScanning) {
+      setShowQRCode(true);
       return;
     }
 
-    // Show the install prompt
+    if (!isScanning) {
+      setIsScanning(true);
+      return;
+    }
+
+    // This part is called after scanning completes (triggering logic below in effect or separate call)
+    proceedWithInstallation();
+  };
+
+  const proceedWithInstallation = async () => {
     try {
       if (platform === "ios") {
         setShowIOSGuide(true);
@@ -117,15 +120,17 @@ function MainLayout({ user }: { user: UserProfile }) {
         await deferredPrompt.prompt();
         const choiceResult = await deferredPrompt.userChoice;
         if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the install prompt');
           setDeferredPrompt(null);
         }
+      } else {
+        // Fallback for missing prompt
+        alert("El sistema de instalación nativo no respondió. Por favor, usa la opción 'Instalar aplicación' en el menú de tu navegador (⋮).");
       }
     } catch (err) {
       console.error("Installation failed:", err);
-      // Fallback for some browsers where prompt() might fail
       alert("Para instalar: Pulsa los tres puntos (⋮) de tu navegador y elige 'Instalar aplicación'.");
     } finally {
+      setIsScanning(false);
       setIsMobileAlertOpen(false);
     }
   };
@@ -183,23 +188,42 @@ function MainLayout({ user }: { user: UserProfile }) {
 
               <div className="flex items-start gap-4 pr-6">
                 <div className="bg-indigo-600/20 p-3 rounded-2xl border border-indigo-500/30 shrink-0">
-                  <Smartphone className="w-6 h-6 text-indigo-400" />
+                  {isScanning ? (
+                    <Zap className="w-6 h-6 text-indigo-400 animate-pulse" />
+                  ) : showQRCode ? (
+                    <QrCode className="w-6 h-6 text-indigo-400" />
+                  ) : (
+                    <Smartphone className="w-6 h-6 text-indigo-400" />
+                  )}
                 </div>
                 <div>
                   <h3 className="text-lg font-900 tracking-tighter uppercase italic leading-none mb-1 text-indigo-400">
-                    EduStream Móvil_
+                    {isScanning ? "Escaneando Sistema_" : showQRCode ? "Vinculación Móvil_" : "EduStream Móvil_"}
                   </h3>
                   <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest leading-normal">
-                    {window.self !== window.top 
-                      ? "MODO SEGURO: Pulsa ABRIR para activar la instalación de la App oficial."
-                      : platform === "ios" 
-                        ? "Apple requiere una instalación manual. Pulsa el botón para ver cómo añadir EduStream a tu iPhone."
-                        : "SISTEMA LISTO: Instala ahora para tener acceso total sin navegador."}
+                    {isScanning 
+                      ? "Verificando compatibilidad y preparando paquete de instalación segura."
+                      : showQRCode 
+                        ? "Detectado navegador de escritorio. Escanea para continuar en tu smartphone."
+                        : window.self !== window.top 
+                          ? "MODO SEGURO: Pulsa ABRIR para activar la instalación de la App oficial."
+                          : platform === "ios" 
+                            ? "Apple requiere una instalación manual. Pulsa el botón para ver cómo añadir EduStream a tu iPhone."
+                            : "SISTEMA LISTO: Instala ahora para tener acceso total sin navegador."}
                   </p>
                 </div>
               </div>
 
-              {showIOSGuide && platform === "ios" && (
+              {isScanning ? (
+                <InstallationScanner 
+                  platform={platform} 
+                  onComplete={proceedWithInstallation} 
+                />
+              ) : showQRCode ? (
+                <QRCodeBridge />
+              ) : (
+                <>
+                  {showIOSGuide && platform === "ios" && (
                 <motion.div 
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: "auto", opacity: 1 }}
@@ -222,36 +246,42 @@ function MainLayout({ user }: { user: UserProfile }) {
                   </div>
                 </motion.div>
               )}
+            </>
+          )}
 
-              <div className="mt-5 flex gap-2">
-                {window.self !== window.top ? (
+              {!isScanning && (
+                <div className="mt-5 flex gap-2">
+                  {window.self !== window.top ? (
+                    <Button 
+                      className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95 animate-pulse"
+                      onClick={() => window.open(window.location.href, '_blank')}
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" /> ABRIR PARA INSTALAR_
+                    </Button>
+                  ) : (
+                    <Button 
+                      className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95 animate-pulse"
+                      onClick={handleInstallClick}
+                    >
+                      {showQRCode ? <ExternalLink className="w-3.5 h-3.5" /> : platform === "ios" ? <Apple className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
+                      {showQRCode ? 'CARGAR EN MÓVIL' : platform === "ios" ? 'VER GUÍA' : 'INSTALAR AHORA_'}
+                    </Button>
+                  )}
                   <Button 
-                    className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95 animate-pulse"
-                    onClick={() => window.open(window.location.href, '_blank')}
+                    variant="outline" 
+                    className="flex-1 h-12 border-white/10 text-zinc-400 hover:text-white font-900 uppercase text-[10px] tracking-widest rounded-xl"
+                    onClick={() => {
+                      setIsMobileAlertOpen(false);
+                      setShowIOSGuide(false);
+                      setIsScanning(false);
+                      setShowQRCode(false);
+                      localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
+                    }}
                   >
-                    <ExternalLink className="w-3.5 h-3.5" /> ABRIR PARA INSTALAR_
+                    CERRAR
                   </Button>
-                ) : (
-                  <Button 
-                    className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95 animate-pulse"
-                    onClick={handleInstallClick}
-                  >
-                    {platform === "ios" ? <Apple className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
-                    {platform === "ios" ? 'VER GUÍA' : 'INSTALAR AHORA_'}
-                  </Button>
-                )}
-                <Button 
-                  variant="outline" 
-                  className="flex-1 h-12 border-white/10 text-zinc-400 hover:text-white font-900 uppercase text-[10px] tracking-widest rounded-xl"
-                  onClick={() => {
-                    setIsMobileAlertOpen(false);
-                    setShowIOSGuide(false);
-                    localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
-                  }}
-                >
-                  CERRAR
-                </Button>
-              </div>
+                </div>
+              )}
             </div>
           </motion.div>
         )}

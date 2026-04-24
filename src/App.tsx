@@ -32,52 +32,36 @@ function MainLayout({ user }: { user: UserProfile }) {
   }, [theme]);
 
   useEffect(() => {
-    // Detect mobile device or standalone mode
-    const checkMobile = () => {
-      try {
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const nav = window.navigator as any;
-        const isStandalone = nav?.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-
-        // If mobile and not already installed, show alert after delay
-        if (isMobile && !isStandalone) {
-          const hasSeenAlert = sessionStorage.getItem('pwa_alert_seen');
-          if (!hasSeenAlert) {
-            setTimeout(() => {
-              setIsMobileAlertOpen(true);
-            }, 3000);
-          }
-        }
-      } catch (err) {
-        console.error("checkMobile failed:", err);
-      }
-    };
-
-    checkMobile();
-
     // Listen for PWA install prompt
     const handleBeforeInstallPrompt = (e: any) => {
       console.log("PWA beforeinstallprompt event captured");
       e.preventDefault();
       setDeferredPrompt(e);
-      // Wait a bit before showing to not be annoying immediately
-      setTimeout(() => {
-        const hasSeenAlert = sessionStorage.getItem('pwa_alert_seen');
-        if (!hasSeenAlert) {
-          setIsMobileAlertOpen(true);
-        }
-      }, 2000);
+      // Show dialog if not in standalone mode
+      const nav = window.navigator as any;
+      const isStandalone = nav?.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+      if (!isStandalone) {
+        setIsMobileAlertOpen(true);
+      }
     };
 
     const handleAppInstalled = () => {
       console.log("PWA was installed");
       setDeferredPrompt(null);
       setIsMobileAlertOpen(false);
-      sessionStorage.setItem('pwa_alert_seen', 'true');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
+
+    // Initial check for mobile/standalone
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const nav = window.navigator as any;
+    const isStandalone = nav?.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    
+    if (isMobile && !isStandalone) {
+      setTimeout(() => setIsMobileAlertOpen(true), 1500);
+    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -223,7 +207,6 @@ function MainLayout({ user }: { user: UserProfile }) {
               className="w-full h-10 text-zinc-500 text-[10px] font-bold uppercase tracking-widest hover:text-white"
               onClick={() => {
                 setIsMobileAlertOpen(false);
-                sessionStorage.setItem('pwa_alert_seen', 'true');
               }}
             >
               Continuar en el navegador

@@ -239,7 +239,7 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
         </div>
 
         <TabsContent value="overview">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             <div className="glass p-8 rounded-[32px] relative overflow-hidden group">
               <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-600/10 blur-[40px] group-hover:bg-indigo-600/20 transition-all"></div>
               <div className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-4">Total Profesores</div>
@@ -260,6 +260,66 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
               <div className="text-6xl font-800 italic leading-none">{enrollments.length}</div>
               <div className="text-[10px] text-green-400 font-bold uppercase mt-2 tracking-tighter">Active Students</div>
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <Card className="glass border-white/5 p-8 rounded-[32px]">
+              <CardHeader className="p-0 mb-6">
+                <CardTitle className="text-2xl font-800 tracking-tighter uppercase italic flex items-center gap-3">
+                  <TrendingUp className="w-6 h-6 text-indigo-500" />
+                  Top Popularidad_
+                </CardTitle>
+                <CardDescription className="text-[10px] uppercase font-bold tracking-widest text-white/40">Cursos con mayor ratio de tracción y estudiantes activos.</CardDescription>
+              </CardHeader>
+              <div className="space-y-6">
+                {courses.map(course => ({
+                  ...course,
+                  count: enrollments.filter(e => e.courseId === course.id).length
+                })).sort((a, b) => b.count - a.count).slice(0, 3).map((c, i) => (
+                  <div key={c.id} className="flex items-center gap-4 group">
+                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl font-900 italic text-indigo-500 shadow-glow">
+                      0{i + 1}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-800 uppercase tracking-tighter truncate">{c.title}</div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <div className="h-1.5 flex-1 bg-white/5 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-indigo-500/50" 
+                            style={{ width: `${(c.count / (enrollments.length || 1)) * 100}%` }} 
+                          />
+                        </div>
+                        <span className="text-[10px] font-bold text-white/40 uppercase">{c.count} st_</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card className="glass border-white/5 p-8 rounded-[32px]">
+              <CardHeader className="p-0 mb-6">
+                <CardTitle className="text-2xl font-800 tracking-tighter uppercase italic flex items-center gap-3">
+                  <Star className="w-6 h-6 text-yellow-500" />
+                  Calidad de Contenido_
+                </CardTitle>
+                <CardDescription className="text-[10px] uppercase font-bold tracking-widest text-white/40">Ranking basado en el feedback directo de los estudiantes.</CardDescription>
+              </CardHeader>
+              <div className="space-y-6">
+                {statsData.slice(0, 3).map((s, i) => (
+                  <div key={i} className="flex items-center justify-between group">
+                    <div className="flex flex-col">
+                      <span className="text-sm font-800 uppercase tracking-tighter max-w-[200px] truncate">{s.name}</span>
+                      <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest">{s.votes} reviews_</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                       <span className="text-2xl font-900 italic text-yellow-500">{s.score.toFixed(1)}</span>
+                       <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
           </div>
         </TabsContent>
 

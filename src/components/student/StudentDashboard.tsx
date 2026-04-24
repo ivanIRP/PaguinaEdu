@@ -96,17 +96,17 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
         </div>
       </header>
 
-      <Tabs defaultValue="browser" className="w-full flex flex-col items-start" orientation="horizontal">
-        <div className="w-full overflow-x-auto no-scrollbar mb-8 -mx-4 px-4 md:mx-0 md:px-0">
-          <TabsList className="glass p-1 h-11 w-max min-w-full md:min-w-0 md:w-auto gap-1 border-white/5 bg-white/5 rounded-xl border flex shrink-0">
-            <TabsTrigger value="browser" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 py-1.5 transition-all uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
-              <Search className="w-3.5 h-3.5" /> Explorar
+      <Tabs defaultValue="browser" className="w-full flex flex-col items-start gap-8" orientation="horizontal">
+        <div className="w-full overflow-x-auto no-scrollbar scroll-smooth -mx-4 px-4 md:mx-0 md:px-0">
+          <TabsList className="glass p-1 h-10 w-max md:w-auto gap-0.5 border-white/5 bg-white/5 rounded-xl border flex shrink-0 shadow-lg">
+            <TabsTrigger value="browser" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 md:px-6 py-1.5 transition-all md:uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
+              <Search className="w-3.5 h-3.5" /> <span>Explorar</span>
             </TabsTrigger>
-            <TabsTrigger value="my-courses" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 py-1.5 transition-all uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
-              <BookOpen className="w-3.5 h-3.5" /> Mis Cursos
+            <TabsTrigger value="my-courses" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 md:px-6 py-1.5 transition-all md:uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
+              <BookOpen className="w-3.5 h-3.5" /> <span>Mis Cursos</span>
             </TabsTrigger>
-            <TabsTrigger value="profile" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 py-1.5 transition-all uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
-              <User className="w-3.5 h-3.5" /> Perfil
+            <TabsTrigger value="profile" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 md:px-6 py-1.5 transition-all md:uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
+              <User className="w-3.5 h-3.5" /> <span>Perfil</span>
             </TabsTrigger>
           </TabsList>
         </div>

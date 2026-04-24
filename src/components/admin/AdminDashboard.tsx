@@ -9,12 +9,11 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { Users, BookOpen, BarChart3, Plus, Trash2, LayoutDashboard, Settings, Edit, ArrowUp, ArrowDown, ExternalLink } from "lucide-react";
+import { Users, BookOpen, BarChart3, Plus, Trash2, LayoutDashboard, Settings, Edit, ArrowUp, ArrowDown, ExternalLink, Upload, Eye } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 
 import { CoursePlayer } from "../student/CoursePlayer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
-import { Upload, Eye } from "lucide-react";
 
 export function AdminDashboard({ user }: { user: UserProfile }) {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -204,23 +203,23 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
         </div>
       </header>
 
-      <Tabs defaultValue="overview" className="w-full flex flex-col items-start" orientation="horizontal">
-        <div className="w-full overflow-x-auto no-scrollbar mb-8 -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth">
-          <TabsList className="glass p-1 h-11 w-max min-w-full md:min-w-0 md:w-auto gap-1 border-white/5 bg-white/5 rounded-xl border flex shrink-0">
-            <TabsTrigger value="overview" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-3 md:px-4 py-1.5 transition-all uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
-              <LayoutDashboard className="w-3.5 h-3.5" /> <span>Resumen</span>
+      <Tabs defaultValue="overview" className="w-full flex flex-col items-start gap-8" orientation="horizontal">
+        <div className="w-full overflow-x-auto no-scrollbar scroll-smooth -mx-4 px-4 md:mx-0 md:px-0">
+          <TabsList className="glass p-1 h-10 w-max md:w-auto gap-0.5 border-white/5 bg-white/5 rounded-xl border flex shrink-0 shadow-lg">
+            <TabsTrigger value="overview" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-3 md:px-5 py-1.5 transition-all md:uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
+              <LayoutDashboard className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Resumen</span>
             </TabsTrigger>
-            <TabsTrigger value="teachers" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-3 md:px-4 py-1.5 transition-all uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
-              <Users className="w-3.5 h-3.5" /> <span>Profesores</span>
+            <TabsTrigger value="teachers" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-3 md:px-5 py-1.5 transition-all md:uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
+              <Users className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Profesores</span>
             </TabsTrigger>
-            <TabsTrigger value="courses" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-3 md:px-4 py-1.5 transition-all uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
-              <BookOpen className="w-3.5 h-3.5" /> <span>Cursos</span>
+            <TabsTrigger value="courses" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-3 md:px-5 py-1.5 transition-all md:uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
+              <BookOpen className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Cursos</span>
             </TabsTrigger>
-            <TabsTrigger value="specialties" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-3 md:px-4 py-1.5 transition-all uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
-              <Settings className="w-3.5 h-3.5" /> <span>Ajustes</span>
+            <TabsTrigger value="specialties" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-3 md:px-5 py-1.5 transition-all md:uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
+              <Settings className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Ajustes</span>
             </TabsTrigger>
-            <TabsTrigger value="stats" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-3 md:px-4 py-1.5 transition-all uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
-              <BarChart3 className="w-3.5 h-3.5" /> <span>Reportes</span>
+            <TabsTrigger value="stats" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-3 md:px-5 py-1.5 transition-all md:uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
+              <BarChart3 className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Reportes</span>
             </TabsTrigger>
           </TabsList>
         </div>

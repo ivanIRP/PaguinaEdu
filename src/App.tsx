@@ -65,21 +65,33 @@ function MainLayout({ user }: { user: UserProfile }) {
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
+      // If no prompt, it might be iOS or already installed but prompt missed
+      console.log("No deferred prompt available");
       setIsMobileAlertOpen(false);
       return;
     }
 
     // Show the install prompt
-    deferredPrompt.prompt();
-    
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to the install prompt: ${outcome}`);
-    
-    // We've used the prompt, and can't use it again, throw it away
-    setDeferredPrompt(null);
-    setIsMobileAlertOpen(false);
-    sessionStorage.setItem('pwa_alert_seen', 'true');
+    try {
+      await deferredPrompt.prompt();
+      
+      // Wait for the user to respond to the prompt
+      const choiceResult = await deferredPrompt.userChoice;
+      console.log(`User response to the install prompt: ${choiceResult.outcome}`);
+      
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+        sessionStorage.setItem('pwa_alert_seen', 'true');
+      } else {
+        console.log('User dismissed the install prompt');
+      }
+    } catch (err) {
+      console.error("Installation failed:", err);
+    } finally {
+      // Always clear the prompt and close the dialog
+      setDeferredPrompt(null);
+      setIsMobileAlertOpen(false);
+    }
   };
 
   const toggleTheme = async () => {

@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from "motion/react";
 function MainLayout({ user }: { user: UserProfile }) {
   const [theme, setTheme] = useState(user.theme || "dark");
   const [isMobileAlertOpen, setIsMobileAlertOpen] = useState(false);
+  const [showIOSGuide, setShowIOSGuide] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [platform, setPlatform] = useState<"ios" | "android" | "other">("other");
 
@@ -108,8 +109,7 @@ function MainLayout({ user }: { user: UserProfile }) {
     // Show the install prompt
     try {
       if (platform === "ios") {
-        alert("Instalación automática no disponible en iOS por restricciones de Apple.\n\nPasos para instalar:\n1. Pulsa el icono 'Compartir' (cuadrado con flecha)\n2. Elige 'Añadir a la pantalla de inicio'\n3. Pulsa 'Añadir'");
-        setIsMobileAlertOpen(false);
+        setShowIOSGuide(true);
         return;
       }
 
@@ -147,7 +147,7 @@ function MainLayout({ user }: { user: UserProfile }) {
         onToggleTheme={toggleTheme} 
         currentTheme={theme} 
         onInstall={handleInstallClick}
-        isInstallAvailable={!!deferredPrompt}
+        isInstallAvailable={!!deferredPrompt || (platform === "ios" && !(window.navigator as any).standalone)}
       />
       <main className="container mx-auto py-4 md:py-8 px-4">
         {user.role === "admin" ? (
@@ -172,6 +172,7 @@ function MainLayout({ user }: { user: UserProfile }) {
                 <button 
                 onClick={() => {
                   setIsMobileAlertOpen(false);
+                  setShowIOSGuide(false);
                   localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
                 }}
                 className="absolute top-4 right-4 p-2 text-white/20 hover:text-white transition-colors"
@@ -191,10 +192,36 @@ function MainLayout({ user }: { user: UserProfile }) {
                   <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest leading-normal">
                     {window.self !== window.top 
                       ? "MODO SEGURO: Pulsa ABRIR para activar la instalación de la App oficial."
-                      : "SISTEMA LISTO: Instala ahora para tener acceso total sin navegador."}
+                      : platform === "ios" 
+                        ? "Apple requiere una instalación manual. Pulsa el botón para ver cómo añadir EduStream a tu iPhone."
+                        : "SISTEMA LISTO: Instala ahora para tener acceso total sin navegador."}
                   </p>
                 </div>
               </div>
+
+              {showIOSGuide && platform === "ios" && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  className="mt-4 p-4 bg-white/5 rounded-2xl border border-white/10 space-y-3"
+                >
+                  <p className="text-[10px] font-bold uppercase text-indigo-400 tracking-tighter">Pasos para instalar en iPhone:</p>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3 text-[10px] text-zinc-300 font-medium">
+                      <span className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[8px] font-black shrink-0">1</span>
+                      <span>Pulsa el icono <span className="text-white bg-white/10 px-1.5 py-0.5 rounded border border-white/20">Compartir</span> (cuadrado con flecha)</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-[10px] text-zinc-300 font-medium">
+                      <span className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[8px] font-black shrink-0">2</span>
+                      <span>Busca <span className="text-white font-bold italic">"Añadir a pantalla de inicio"</span></span>
+                    </div>
+                    <div className="flex items-center gap-3 text-[10px] text-zinc-300 font-medium">
+                      <span className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[8px] font-black shrink-0">3</span>
+                      <span>Pulsa <span className="text-indigo-400 font-bold uppercase tracking-tighter">Añadir</span> en la esquina superior</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
               <div className="mt-5 flex gap-2">
                 {window.self !== window.top ? (
@@ -218,6 +245,7 @@ function MainLayout({ user }: { user: UserProfile }) {
                   className="flex-1 h-12 border-white/10 text-zinc-400 hover:text-white font-900 uppercase text-[10px] tracking-widest rounded-xl"
                   onClick={() => {
                     setIsMobileAlertOpen(false);
+                    setShowIOSGuide(false);
                     localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
                   }}
                 >

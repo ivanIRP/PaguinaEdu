@@ -38,10 +38,16 @@ function MainLayout({ user }: { user: UserProfile }) {
       console.log("PWA beforeinstallprompt event captured");
       e.preventDefault();
       setDeferredPrompt(e);
-      // Show dialog if not in standalone mode
+      
+      // Check if already installed
       const nav = window.navigator as any;
       const isStandalone = nav?.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-      if (!isStandalone) {
+      
+      // Check dismissal
+      const lastDismissed = localStorage.getItem('pwa_prompt_dismissed');
+      const isDismissed = lastDismissed && (Date.now() - parseInt(lastDismissed)) < 1000 * 60 * 60 * 24;
+
+      if (!isStandalone && !isDismissed) {
         setIsMobileAlertOpen(true);
       }
     };
@@ -50,32 +56,27 @@ function MainLayout({ user }: { user: UserProfile }) {
       console.log("PWA was installed");
       setDeferredPrompt(null);
       setIsMobileAlertOpen(false);
+      alert("¡Instalación completa! Ya puedes usar EduStream desde tu pantalla de inicio.");
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
-    // Initial check for mobile/standalone
+    // Initial check for mobile
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const nav = window.navigator as any;
     const isStandalone = nav?.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    const lastDismissed = localStorage.getItem('pwa_prompt_dismissed');
+    const isDismissed = lastDismissed && (Date.now() - parseInt(lastDismissed)) < 1000 * 60 * 60 * 24;
     
-    if (isMobile && !isStandalone) {
-      setTimeout(() => setIsMobileAlertOpen(true), 1500);
+    if (isMobile && !isStandalone && !isDismissed) {
+      setTimeout(() => setIsMobileAlertOpen(true), 3000);
     }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('appinstalled', () => {
-      console.log('EduStream was installed');
-      setIsMobileAlertOpen(false);
-      alert("¡Increíble! EduStream ya está instalado en tu dispositivo.");
-    });
   }, []);
 
   const handleInstallClick = async () => {
@@ -168,8 +169,11 @@ function MainLayout({ user }: { user: UserProfile }) {
             <div className="glass border-white/10 bg-zinc-950/90 backdrop-blur-2xl rounded-[2rem] p-5 shadow-2xl relative overflow-hidden ring-1 ring-white/20">
               <div className="absolute top-0 left-0 w-full h-1 bg-indigo-600 shadow-glow" />
               
-              <button 
-                onClick={() => setIsMobileAlertOpen(false)}
+                <button 
+                onClick={() => {
+                  setIsMobileAlertOpen(false);
+                  localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
+                }}
                 className="absolute top-4 right-4 p-2 text-white/20 hover:text-white transition-colors"
                 aria-label="Cerrar"
               >
@@ -212,7 +216,10 @@ function MainLayout({ user }: { user: UserProfile }) {
                 <Button 
                   variant="outline" 
                   className="flex-1 h-12 border-white/10 text-zinc-400 hover:text-white font-900 uppercase text-[10px] tracking-widest rounded-xl"
-                  onClick={() => setIsMobileAlertOpen(false)}
+                  onClick={() => {
+                    setIsMobileAlertOpen(false);
+                    localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
+                  }}
                 >
                   CERRAR
                 </Button>

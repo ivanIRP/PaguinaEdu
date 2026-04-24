@@ -53,13 +53,28 @@ function MainLayout({ user }: { user: UserProfile }) {
       console.log("PWA beforeinstallprompt event captured");
       e.preventDefault();
       setDeferredPrompt(e);
-      setIsMobileAlertOpen(true);
+      // Wait a bit before showing to not be annoying immediately
+      setTimeout(() => {
+        const hasSeenAlert = sessionStorage.getItem('pwa_alert_seen');
+        if (!hasSeenAlert) {
+          setIsMobileAlertOpen(true);
+        }
+      }, 2000);
+    };
+
+    const handleAppInstalled = () => {
+      console.log("PWA was installed");
+      setDeferredPrompt(null);
+      setIsMobileAlertOpen(false);
+      sessionStorage.setItem('pwa_alert_seen', 'true');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
@@ -173,9 +188,12 @@ function MainLayout({ user }: { user: UserProfile }) {
           </DialogFooter>
           
           {!deferredPrompt && (
-            <div className="mt-2 text-center">
-              <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-800 bg-zinc-950/50 py-2 rounded-lg">
-                Usa el menú de "Compartir" para instalar_
+            <div className="mt-2 text-center bg-indigo-500/10 p-4 rounded-2xl border border-indigo-500/20">
+              <p className="text-[10px] text-indigo-300 uppercase tracking-widest font-900 mb-2">
+                Instalación Manual_
+              </p>
+              <p className="text-[9px] text-zinc-400 font-medium leading-relaxed">
+                Si no ves el botón de instalar, usa la opción <span className="text-white font-bold">"Añadir a pantalla de inicio"</span> en el menú de compartir de tu navegador.
               </p>
             </div>
           )}

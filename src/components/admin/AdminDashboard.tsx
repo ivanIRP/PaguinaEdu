@@ -471,24 +471,24 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
                 <CardDescription>Gestiona tus rutas de aprendizaje activas.</CardDescription>
               </CardHeader>
               <CardContent>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                     {courses.map(c => (
-                      <div key={c.id} className="group relative glass rounded-[32px] overflow-hidden border-white/5 hover:border-white/20 transition-all hover:translate-y-[-4px]">
-                        <div className="h-40 bg-zinc-900 relative">
+                      <div key={c.id} className="group relative glass rounded-[24px] md:rounded-[32px] overflow-hidden border-white/5 hover:border-white/20 transition-all hover:translate-y-[-4px]">
+                        <div className="h-32 md:h-40 bg-zinc-900 relative">
                            {c.bannerUrl && <img src={c.bannerUrl} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" referrerPolicy="no-referrer" />}
                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-                           <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                           <div className="absolute top-3 right-3 md:top-4 md:right-4 flex gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity z-10">
                               <Button variant="secondary" size="icon" className="h-8 w-8 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white" onClick={() => editCourse(c)}><Edit className="w-4 h-4 text-black" /></Button>
                               <Button variant="destructive" size="icon" className="h-8 w-8 rounded-lg" onClick={() => deleteCourse(c.id)}><Trash2 className="w-4 h-4" /></Button>
                            </div>
                         </div>
-                        <div className="p-6">
-                           <div className="text-[10px] font-800 text-indigo-400 uppercase tracking-widest mb-1">
+                        <div className="p-4 md:p-6">
+                           <div className="text-[9px] md:text-[10px] font-800 text-indigo-400 uppercase tracking-widest mb-1 truncate">
                              {c.lessons.length} Lecciones • {
-                               specialties.find(s => s.id === teachers.find(t => t.id === c.teacherId)?.specialtyId)?.name || 'Especialidad'
-                             } • {teachers.find(t => t.id === c.teacherId)?.name}
+                                specialties.find(s => s.id === teachers.find(t => t.id === c.teacherId)?.specialtyId)?.name || 'Especialidad'
+                             }
                            </div>
-                           <h3 className="text-xl font-800 tracking-tighter uppercase leading-tight line-clamp-2">{c.title}</h3>
+                           <h3 className="text-base md:text-xl font-800 tracking-tighter uppercase leading-tight line-clamp-2">{c.title}</h3>
                         </div>
                       </div>
                     ))}

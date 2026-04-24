@@ -135,7 +135,7 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {courses
               .filter(c => filterSpecialtyId ? teachers.find(t => t.id === c.teacherId)?.specialtyId === filterSpecialtyId : true)
               .map(course => {
@@ -146,10 +146,10 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
                 return (
                   <Card 
                     key={course.id} 
-                    className="glass overflow-hidden border-white/10 group transition-all hover:scale-[1.02] cursor-pointer"
+                    className="glass overflow-hidden border-white/10 group transition-all hover:scale-[1.02] cursor-pointer flex flex-col"
                     onClick={() => setViewingCourseDetail(course)}
                   >
-                    <div className="h-56 relative overflow-hidden bg-black/40">
+                    <div className="h-48 md:h-56 relative overflow-hidden bg-black/40 shrink-0">
                       {course.bannerUrl ? (
                         <img src={course.bannerUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" referrerPolicy="no-referrer" />
                       ) : (
@@ -162,25 +162,25 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
                         <Badge className="absolute top-4 right-4 bg-indigo-600 border-none uppercase text-[10px] font-800">Completado</Badge>
                       )}
                     </div>
-                    <CardHeader className="space-y-1">
+                    <CardHeader className="space-y-1 p-5 md:p-6 flex-grow">
                       <div className="text-[10px] font-800 text-indigo-400 uppercase tracking-widest">{specialty?.name || "Sin Especialidad"}</div>
-                      <CardTitle className="text-2xl font-800 uppercase tracking-tighter truncate leading-none pt-1">{course.title}</CardTitle>
-                      <CardDescription className="uppercase text-[10px] font-bold tracking-wider opacity-60">
+                      <CardTitle className="text-xl md:text-2xl font-800 uppercase tracking-tighter truncate leading-none pt-1">{course.title}</CardTitle>
+                      <CardDescription className="uppercase text-[9px] md:text-[10px] font-bold tracking-wider opacity-60">
                         Prof. {teacher?.name} • {course.lessons.length} Módulos
                       </CardDescription>
                     </CardHeader>
-                    <CardFooter className="pt-4 px-6 pb-6">
+                    <CardFooter className="pt-0 px-5 md:px-6 pb-5 md:pb-6">
                       {enrolled ? (
                         <Button 
                           onClick={(e) => { e.stopPropagation(); setSelectedCourse(course); }} 
-                          className="w-full bg-white/10 hover:bg-white/20 text-white border-white/10 uppercase text-[11px] font-800 h-12 tracking-widest rounded-xl"
+                          className="w-full bg-white/10 hover:bg-white/20 text-white border-white/10 uppercase text-[10px] md:text-[11px] font-800 h-10 md:h-12 tracking-widest rounded-xl"
                         >
                           Continuar
                         </Button>
                       ) : (
                         <Button 
                           onClick={(e) => { e.stopPropagation(); enrollInCourse(course); }} 
-                          className="w-full bg-white text-black hover:bg-indigo-50 uppercase text-[11px] font-800 h-12 tracking-widest rounded-xl"
+                          className="w-full bg-white text-black hover:bg-indigo-50 uppercase text-[10px] md:text-[11px] font-800 h-10 md:h-12 tracking-widest rounded-xl"
                         >
                           Iniciarse_
                         </Button>
@@ -231,43 +231,66 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
           </Dialog>
         </TabsContent>
 
-        <TabsContent value="my-courses" className="pt-6">
+        <TabsContent value="my-courses" className="pt-0">
           {enrollments.length === 0 ? (
-            <div className="text-center py-20 bg-muted/20 rounded-2xl border-2 border-dashed">
-               <GraduationCap className="w-12 h-12 mx-auto opacity-20" />
-               <p className="mt-4 text-muted-foreground">Aún no te has inscrito en ningún curso.</p>
-               <Button variant="link" onClick={() => {}}>¡Explora el catálogo!</Button>
+            <div className="text-center py-24 glass rounded-[32px] border-white/5 border flex flex-col items-center justify-center">
+               <div className="bg-white/5 p-6 rounded-full mb-6">
+                 <GraduationCap className="w-12 h-12 opacity-20" />
+               </div>
+               <p className="text-zinc-500 font-bold uppercase tracking-widest text-sm">Aún no te has inscrito en ningún curso</p>
+               <Button variant="link" onClick={() => {}} className="text-indigo-400 font-800 uppercase tracking-widest text-[10px] mt-2">¡Explora el catálogo!</Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
               {enrollments.map(enrollment => {
                 const course = courses.find(c => c.id === enrollment.courseId);
                 if (!course) return null;
                 const progress = Math.round((enrollment.completedLessonIds.length / course.lessons.length) * 100);
+                const teacher = teachers.find(t => t.id === course.teacherId);
+                const specialty = specialties.find(s => s.id === teacher?.specialtyId);
                 
                 return (
-                  <Card key={enrollment.id} className="cursor-pointer" onClick={() => setSelectedCourse(course)}>
-                    <CardHeader className="pb-2">
-                       <CardTitle className="text-lg">{course.title}</CardTitle>
-                       <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                          <span>{progress}% Progreso</span>
-                          <span>{enrollment.completedLessonIds.length}/{course.lessons.length} Lecciones</span>
-                       </div>
+                  <Card 
+                    key={enrollment.id} 
+                    className="glass overflow-hidden border-white/10 group transition-all hover:scale-[1.02] cursor-pointer flex flex-col" 
+                    onClick={() => setSelectedCourse(course)}
+                  >
+                    <div className="h-48 md:h-56 relative overflow-hidden bg-black/40 shrink-0">
+                      {course.bannerUrl ? (
+                        <img src={course.bannerUrl} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" referrerPolicy="no-referrer" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <GraduationCap className="w-16 h-16 opacity-5" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80" />
+                      
+                      <div className="absolute bottom-4 left-5 right-5 space-y-2">
+                        <div className="flex justify-between items-center text-[10px] font-800 uppercase tracking-widest text-white/60">
+                           <span>{progress}% Progreso</span>
+                           <span>{enrollment.completedLessonIds.length}/{course.lessons.length} Lecciones</span>
+                        </div>
+                        <Progress value={progress} className="h-1.5 bg-white/10" />
+                      </div>
+                    </div>
+                    
+                    <CardHeader className="space-y-1 p-5 md:p-6 flex-grow">
+                      <div className="text-[10px] font-800 text-indigo-400 uppercase tracking-widest">{specialty?.name || "Sin Especialidad"}</div>
+                      <CardTitle className="text-xl md:text-2xl font-800 uppercase tracking-tighter truncate leading-none pt-1">{course.title}</CardTitle>
+                      <div className="flex items-center gap-2 mt-2">
+                        {enrollment.isFinished ? (
+                          <Badge className="bg-green-500/20 text-green-500 border-none uppercase text-[9px] font-800 tracking-tighter">Completado</Badge>
+                        ) : (
+                          <Badge className="bg-indigo-500/20 text-indigo-500 border-none uppercase text-[9px] font-800 tracking-tighter">En Curso</Badge>
+                        )}
+                        <span className="text-[10px] font-bold text-zinc-500 uppercase">Prof. {teacher?.name}</span>
+                      </div>
                     </CardHeader>
-                    <CardContent>
-                      <Progress value={progress} className="h-2" />
-                    </CardContent>
-                    <CardFooter className="flex justify-between items-center">
-                       {enrollment.isFinished ? (
-                         <div className="flex items-center gap-1 text-primary text-sm font-bold">
-                           <CheckCircle2 className="w-4 h-4" /> Completado
-                         </div>
-                       ) : (
-                         <div className="flex items-center gap-1 text-muted-foreground text-sm">
-                           <PlayCircle className="w-4 h-4" /> En curso
-                         </div>
-                       )}
-                       <Button size="sm" variant="ghost">Ver lecciones</Button>
+
+                    <CardFooter className="pt-0 px-5 md:px-6 pb-5 md:pb-6">
+                       <Button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white uppercase text-[10px] md:text-[11px] font-800 h-10 md:h-12 tracking-widest rounded-xl shadow-glow">
+                         Continuar_
+                       </Button>
                     </CardFooter>
                   </Card>
                 );

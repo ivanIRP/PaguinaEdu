@@ -88,6 +88,15 @@ function MainLayout({ user }: { user: UserProfile }) {
 
     // Show the install prompt
     try {
+      // Check if we are in an iframe
+      const isInIframe = window.self !== window.top;
+      if (isInIframe) {
+        console.warn("PWA installation is limited inside iframes. Using standalone link.");
+        // Prompt user to open in new tab if we can't show prompt inside iframe
+        alert("Para instalar la aplicación real, ábrela en una pestaña nueva usando el botón superior derecho del editor o el link externo.");
+        return;
+      }
+
       await deferredPrompt.prompt();
       
       // Wait for the user to respond to the prompt

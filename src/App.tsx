@@ -70,6 +70,14 @@ function MainLayout({ user }: { user: UserProfile }) {
     };
   }, []);
 
+  useEffect(() => {
+    window.addEventListener('appinstalled', () => {
+      console.log('EduStream was installed');
+      setIsMobileAlertOpen(false);
+      alert("¡Increíble! EduStream ya está instalado en tu dispositivo.");
+    });
+  }, []);
+
   const handleInstallClick = async () => {
     // Check if we are in an iframe
     const isInIframe = window.self !== window.top;

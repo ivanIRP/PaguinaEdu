@@ -23,6 +23,7 @@ function MainLayout({ user }: { user: UserProfile }) {
   const [isMobileAlertOpen, setIsMobileAlertOpen] = useState(false);
   const [showIOSGuide, setShowIOSGuide] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [isScanComplete, setIsScanComplete] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [platform, setPlatform] = useState<"ios" | "android" | "other">("other");
@@ -61,6 +62,8 @@ function MainLayout({ user }: { user: UserProfile }) {
       console.log("PWA was installed");
       setDeferredPrompt(null);
       setIsMobileAlertOpen(false);
+      setIsScanning(false);
+      setIsScanComplete(false);
       alert("¡Instalación completa! Ya puedes usar EduStream desde tu pantalla de inicio.");
     };
 
@@ -95,17 +98,22 @@ function MainLayout({ user }: { user: UserProfile }) {
 
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    if (!isMobile && !isScanning) {
+    if (!isMobile && !isScanning && !isScanComplete) {
       setShowQRCode(true);
       return;
     }
 
-    if (!isScanning) {
+    if (!isScanning && !isScanComplete) {
       setIsScanning(true);
       return;
     }
 
-    // This part is called after scanning completes (triggering logic below in effect or separate call)
+    if (isScanComplete) {
+       proceedWithInstallation();
+       return;
+    }
+
+    // Default fallback
     proceedWithInstallation();
   };
 
@@ -117,6 +125,7 @@ function MainLayout({ user }: { user: UserProfile }) {
       }
 
       if (deferredPrompt) {
+        // MUST BE CALLED FROM USER GESTURE (This click handler)
         await deferredPrompt.prompt();
         const choiceResult = await deferredPrompt.userChoice;
         if (choiceResult.outcome === 'accepted') {
@@ -131,6 +140,7 @@ function MainLayout({ user }: { user: UserProfile }) {
       alert("Para instalar: Pulsa los tres puntos (⋮) de tu navegador y elige 'Instalar aplicación'.");
     } finally {
       setIsScanning(false);
+      setIsScanComplete(false);
       setIsMobileAlertOpen(false);
     }
   };
@@ -217,12 +227,28 @@ function MainLayout({ user }: { user: UserProfile }) {
               {isScanning ? (
                 <InstallationScanner 
                   platform={platform} 
-                  onComplete={proceedWithInstallation} 
+                  onComplete={() => {
+                    setIsScanning(false);
+                    setIsScanComplete(true);
+                  }} 
                 />
               ) : showQRCode ? (
                 <QRCodeBridge />
               ) : (
                 <>
+                  {isScanComplete && (
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="mb-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-center"
+                    >
+                      <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <ShieldCheck className="w-6 h-6 text-emerald-400" />
+                      </div>
+                      <p className="text-[10px] font-900 uppercase text-emerald-400 tracking-widest mb-1">Verificación completada</p>
+                      <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-tight">Pulsa el botón de abajo para autorizar la instalación final.</p>
+                    </motion.div>
+                  )}
                   {showIOSGuide && platform === "ios" && (
                 <motion.div 
                   initial={{ height: 0, opacity: 0 }}
@@ -263,8 +289,8 @@ function MainLayout({ user }: { user: UserProfile }) {
                       className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95 animate-pulse"
                       onClick={handleInstallClick}
                     >
-                      {showQRCode ? <ExternalLink className="w-3.5 h-3.5" /> : platform === "ios" ? <Apple className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
-                      {showQRCode ? 'CARGAR EN MÓVIL' : platform === "ios" ? 'VER GUÍA' : 'INSTALAR AHORA_'}
+                      {isScanComplete ? <Zap className="w-3.5 h-3.5" /> : showQRCode ? <ExternalLink className="w-3.5 h-3.5" /> : platform === "ios" ? <Apple className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
+                      {isScanComplete ? 'FINALIZAR INSTALACIÓN' : showQRCode ? 'CARGAR EN MÓVIL' : platform === "ios" ? 'VER GUÍA' : 'INSTALAR AHORA_'}
                     </Button>
                   )}
                   <Button 
@@ -274,6 +300,7 @@ function MainLayout({ user }: { user: UserProfile }) {
                       setIsMobileAlertOpen(false);
                       setShowIOSGuide(false);
                       setIsScanning(false);
+                      setIsScanComplete(false);
                       setShowQRCode(false);
                       localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
                     }}

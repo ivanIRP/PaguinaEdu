@@ -2,7 +2,7 @@ import { Role, UserProfile } from "../../types";
 import { auth } from "../../lib/firebase";
 import { signOut } from "firebase/auth";
 import { Button } from "../ui/button";
-import { LogOut, Sun, Moon, GraduationCap, User, Smartphone, Download } from "lucide-react";
+import { LogOut, Sun, Moon, GraduationCap, User, Smartphone, Download, BookOpen } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -48,13 +48,11 @@ export function Navbar({ user, onToggleTheme, currentTheme, onInstall, isInstall
           </Button>
 
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-9 w-9 md:h-10 md:h-10 rounded-full">
-                <Avatar className="h-9 w-9 md:h-10 md:h-10">
-                  <AvatarImage src={user.photoURL} alt={user.fullName} />
-                  <AvatarFallback>{user.fullName.substring(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
-              </Button>
+            <DropdownMenuTrigger className="relative h-9 w-9 md:h-10 md:h-10 rounded-full bg-transparent hover:bg-white/5 transition-colors outline-none cursor-pointer">
+              <Avatar className="h-9 w-9 md:h-10 md:h-10 pointer-events-none">
+                <AvatarImage src={user.photoURL} alt={user.fullName} />
+                <AvatarFallback>{user.fullName.substring(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 glass border-white/10" align="end">
               <DropdownMenuGroup>

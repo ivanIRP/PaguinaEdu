@@ -18,7 +18,9 @@
         // 1. Unregister Service Workers
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.getRegistrations().then(regs => {
-            for(let reg of regs) reg.unregister();
+            for(let reg of regs) {
+              reg.unregister().then(() => console.log('SW unregistered'));
+            }
           });
         }
 
@@ -32,9 +34,17 @@
         // 3. Clear Storage
         try {
           sessionStorage.clear();
-          // We don't clear localStorage because it might contain valid app data (like theme),
-          // but if errors persist, we'll suggest a full reset.
+          // We don't wipe localStorage automatically to avoid losing user settings/session
+          // unless explicitly requested by the user later.
         } catch(e) {}
+        
+        // 4. Reload if we detect a blank screen after a timeout (likely broken script cache)
+        setTimeout(() => {
+          if (!document.getElementById('root')?.hasChildNodes()) {
+            console.warn('App failed to load. Forcing hard reload...');
+            window.location.reload(true);
+          }
+        }, 5000);
       })();
     </script>
     <script type="module" src="/src/main.tsx"></script>

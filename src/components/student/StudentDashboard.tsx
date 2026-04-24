@@ -97,15 +97,15 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
       </header>
 
       <Tabs defaultValue="browser" className="w-full">
-        <TabsList className="glass p-1 h-auto w-full md:w-fit mb-8 gap-0.5 overflow-x-auto justify-start flex-nowrap no-scrollbar border-white/5">
-          <TabsTrigger value="browser" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 md:px-6 py-2 transition-all uppercase text-[9px] md:text-[10px] font-bold tracking-widest flex gap-2 shrink-0">
-            <Search className="w-3 h-3" /> Explorar
+        <TabsList className="glass p-1 h-auto w-full md:w-fit mb-8 gap-0.5 overflow-x-auto justify-start flex-nowrap no-scrollbar border-white/5 scroll-smooth">
+          <TabsTrigger value="browser" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 md:px-6 py-2.5 transition-all uppercase text-[9px] md:text-[10px] font-bold tracking-widest flex gap-2 shrink-0 whitespace-nowrap min-w-fit">
+            <Search className="w-3.5 h-3.5" /> Explorar
           </TabsTrigger>
-          <TabsTrigger value="my-courses" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 md:px-6 py-2 transition-all uppercase text-[9px] md:text-[10px] font-bold tracking-widest flex gap-2 shrink-0">
-            <BookOpen className="w-3 h-3" /> Mis Cursos
+          <TabsTrigger value="my-courses" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 md:px-6 py-2.5 transition-all uppercase text-[9px] md:text-[10px] font-bold tracking-widest flex gap-2 shrink-0 whitespace-nowrap min-w-fit">
+            <BookOpen className="w-3.5 h-3.5" /> Mis Cursos
           </TabsTrigger>
-          <TabsTrigger value="profile" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 md:px-6 py-2 transition-all uppercase text-[9px] md:text-[10px] font-bold tracking-widest flex gap-2 shrink-0">
-            <User className="w-3 h-3" /> Perfil
+          <TabsTrigger value="profile" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 md:px-6 py-2.5 transition-all uppercase text-[9px] md:text-[10px] font-bold tracking-widest flex gap-2 shrink-0 whitespace-nowrap min-w-fit">
+            <User className="w-3.5 h-3.5" /> Perfil
           </TabsTrigger>
         </TabsList>
 

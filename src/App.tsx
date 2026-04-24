@@ -81,16 +81,25 @@ function MainLayout({ user }: { user: UserProfile }) {
   const handleInstallClick = async () => {
     // Check if we are in an iframe
     const isInIframe = window.self !== window.top;
+    
     if (isInIframe) {
-      const confirmOpen = window.confirm("Para instalar la aplicación real, debemos abrirla en una pestaña nueva del navegador. ¿Deseas continuar?");
-      if (confirmOpen) {
-        window.open(window.location.href, '_blank');
-      }
+      // In iframe, we can't show the install prompt. Must open in new tab.
+      window.open(window.location.href, '_blank');
       return;
     }
 
     if (!deferredPrompt && platform !== "ios") {
-      alert("Instalación Manual:\n1. Pulsa los tres puntos (⋮) o el icono de ajustes de tu navegador.\n2. Busca y elige 'Instalar aplicación' o 'Añadir a pantalla de inicio'.");
+      // If we are in a tab but prompt hasn't fired yet
+      const nav = window.navigator as any;
+      const isStandalone = nav?.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+      
+      if (isStandalone) {
+        alert("¡EduStream ya está instalado y funcionando como aplicación!");
+        setIsMobileAlertOpen(false);
+        return;
+      }
+
+      alert("El instalador automático se está preparando. Si no aparece en 5 segundos, por favor usa la opción 'Instalar aplicación' o 'Añadir a pantalla de inicio' en el menú (⋮) de tu navegador.");
       setIsMobileAlertOpen(false);
       return;
     }
@@ -98,7 +107,7 @@ function MainLayout({ user }: { user: UserProfile }) {
     // Show the install prompt
     try {
       if (platform === "ios") {
-        alert("Instalación en iPhone/iPad:\n1. Pulsa el icono de 'Compartir' (el cuadrado con flecha)\n2. Busca y elige 'Añadir a la pantalla de inicio'\n3. Pulsa 'Añadir'");
+        alert("Instalación automática no disponible en iOS por restricciones de Apple.\n\nPasos para instalar:\n1. Pulsa el icono 'Compartir' (cuadrado con flecha)\n2. Elige 'Añadir a la pantalla de inicio'\n3. Pulsa 'Añadir'");
         setIsMobileAlertOpen(false);
         return;
       }
@@ -108,10 +117,13 @@ function MainLayout({ user }: { user: UserProfile }) {
         const choiceResult = await deferredPrompt.userChoice;
         if (choiceResult.outcome === 'accepted') {
           console.log('User accepted the install prompt');
+          setDeferredPrompt(null);
         }
       }
     } catch (err) {
       console.error("Installation failed:", err);
+      // Fallback for some browsers where prompt() might fail
+      alert("Para instalar: Pulsa los tres puntos (⋮) de tu navegador y elige 'Instalar aplicación'.");
     } finally {
       setIsMobileAlertOpen(false);
     }
@@ -169,13 +181,13 @@ function MainLayout({ user }: { user: UserProfile }) {
                   <Smartphone className="w-6 h-6 text-indigo-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-800 tracking-tighter uppercase italic leading-none mb-1">
-                    Instalar App Móvil_
+                  <h3 className="text-lg font-900 tracking-tighter uppercase italic leading-none mb-1 text-indigo-400">
+                    EduStream Móvil_
                   </h3>
                   <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest leading-normal">
                     {window.self !== window.top 
-                      ? "PWA: Debido a restricciones de seguridad, primero pulsa ABRIR y luego instala desde tu navegador."
-                      : "Obtén la experiencia completa de aplicación instalándola en tu pantalla de inicio como App móvil."}
+                      ? "MODO SEGURO: Pulsa ABRIR para activar la instalación de la App oficial."
+                      : "SISTEMA LISTO: Instala ahora para tener acceso total sin navegador."}
                   </p>
                 </div>
               </div>
@@ -183,18 +195,18 @@ function MainLayout({ user }: { user: UserProfile }) {
               <div className="mt-5 flex gap-2">
                 {window.self !== window.top ? (
                   <Button 
-                    className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95"
+                    className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95 animate-pulse"
                     onClick={() => window.open(window.location.href, '_blank')}
                   >
                     <ExternalLink className="w-3.5 h-3.5" /> ABRIR PARA INSTALAR_
                   </Button>
                 ) : (
                   <Button 
-                    className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95"
+                    className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95 animate-pulse"
                     onClick={handleInstallClick}
                   >
                     {platform === "ios" ? <Apple className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
-                    {platform === "ios" ? 'VER GUÍA' : 'INSTALAR AHORA'}
+                    {platform === "ios" ? 'VER GUÍA' : 'INSTALAR AHORA_'}
                   </Button>
                 )}
                 <Button 

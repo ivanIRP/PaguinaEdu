@@ -42,26 +42,26 @@ export function Certificate({ course, enrollment, studentName }: CertificateProp
   return (
     <div className="w-full space-y-4">
       {/* Digital Badge Card Preview */}
-      <div className="glass border-emerald-500/20 bg-emerald-500/5 p-6 rounded-[2rem] relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-           <Award className="w-16 h-16 text-emerald-400" />
+      <div className="glass border-emerald-500/20 bg-emerald-500/5 p-5 md:p-6 rounded-[2rem] relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+           <Award className="w-24 h-24 text-emerald-400" />
         </div>
-        <div className="relative z-10">
-          <div className="text-[9px] font-800 text-emerald-400 uppercase tracking-widest mb-1">E-Certificate Verified</div>
-          <h4 className="text-lg font-800 uppercase tracking-tighter italic border-l-2 border-emerald-500 pl-3 mb-4">
+        <div className="relative z-10 flex flex-col h-full">
+          <div className="text-[8px] md:text-[9px] font-800 text-emerald-400 uppercase tracking-widest mb-1">E-Certificate Verified</div>
+          <h4 className="text-sm md:text-lg font-800 uppercase tracking-tighter italic border-l-2 border-emerald-500 pl-3 mb-4 line-clamp-2">
             {course.title}
           </h4>
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 rounded-full bg-emerald-600/20 flex items-center justify-center text-emerald-400">
-               <Award className="w-4 h-4" />
+          <div className="flex items-center gap-2 md:gap-3 mb-6">
+            <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-emerald-600/20 flex items-center justify-center text-emerald-400 shrink-0">
+               <Award className="w-3.5 h-3.5 md:w-4 md:h-4" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-[10px] font-bold text-white/40 uppercase">Otorgado a</span>
-              <span className="text-xs font-800 uppercase tracking-tight">{studentName}</span>
+            <div className="flex flex-col min-w-0">
+              <span className="text-[8px] md:text-[10px] font-bold text-white/40 uppercase">Otorgado a</span>
+              <span className="text-[10px] md:text-xs font-800 uppercase tracking-tight truncate">{studentName}</span>
             </div>
           </div>
-          <Button onClick={downloadPDF} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl h-10 uppercase text-[10px] font-800 tracking-widest flex gap-2 shadow-glow">
-            <Download className="w-3.5 h-3.5" /> Descargar PDF_
+          <Button onClick={downloadPDF} className="mt-auto w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl h-9 md:h-10 uppercase text-[9px] md:text-[10px] font-800 tracking-widest flex gap-2 shadow-glow transition-all active:scale-95">
+            <Download className="w-3 h-3 md:w-3.5 md:h-3.5" /> Descargar PDF_
           </Button>
         </div>
       </div>

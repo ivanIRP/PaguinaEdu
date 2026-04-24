@@ -170,10 +170,10 @@ function MainLayout({ user }: { user: UserProfile }) {
 
           <DialogFooter className="flex flex-col gap-3 pb-2 pt-2">
             <Button 
-              className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white font-800 uppercase text-xs tracking-widest rounded-2xl shadow-glow flex gap-3 transition-all active:scale-95"
+              className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-xs tracking-widest rounded-2xl shadow-glow flex gap-3 transition-all active:scale-95"
               onClick={handleInstallClick}
             >
-              <Download className="w-5 h-5" /> {deferredPrompt ? 'Instalar Aplicación_' : 'Añadir a Inicio_'}
+              <Smartphone className="w-5 h-5" /> INSTALAR APLICACIÓN_
             </Button>
             <Button 
               variant="ghost" 

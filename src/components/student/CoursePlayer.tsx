@@ -6,7 +6,7 @@ import { Course, Enrollment, Lesson, Teacher, Specialty, Comment } from "../../t
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
-import { ArrowLeft, Play, CheckCircle2, Lock, Star, MessageSquare, Download, Send, User } from "lucide-react";
+import { ArrowLeft, Play, CheckCircle2, Lock, Star, Download, User } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Textarea } from "../ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../ui/dialog";
@@ -35,50 +35,9 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
   const [commentText, setCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState("");
-  const [isSendingComment, setIsSendingComment] = useState(false);
 
   const teacher = teachers.find(t => t.id === course.teacherId);
   const specialty = specialties.find(s => s.id === teacher?.specialtyId);
-
-  // Fetch comments
-  useEffect(() => {
-    if (course.id === "preview") return;
-
-    const q = query(
-      collection(db, "comments"),
-      where("courseId", "==", course.id),
-      orderBy("createdAt", "desc")
-    );
-
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Comment));
-      setComments(data);
-    });
-
-    return () => unsubscribe();
-  }, [course.id]);
-
-  const handleSendComment = async () => {
-    if (!newComment.trim() || isSendingComment) return;
-    setIsSendingComment(true);
-    try {
-      await addDoc(collection(db, "comments"), {
-        courseId: course.id,
-        userId: enrollment.userId,
-        userName: studentName,
-        userPhoto: studentPhoto || "",
-        content: newComment.trim(),
-        createdAt: serverTimestamp()
-      });
-      setNewComment("");
-    } catch (error) {
-      console.error("Error sending comment:", error);
-    } finally {
-      setIsSendingComment(false);
-    }
-  };
 
   // Sequential Logic: A lesson is unlocked if it's the first one or the previous one is completed.
   const isLessonUnlocked = (lessonId: string) => {
@@ -278,80 +237,7 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
            </div>
         </div>
       </main>
-
-      {/* Comments Section */}
-      <div className="mt-12 space-y-8">
-        <header className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 flex items-center justify-center text-indigo-400">
-            <MessageSquare className="w-6 h-6" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-800 uppercase tracking-tighter italic">Comunidad • Feedback_</h2>
-            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Comparte tus dudas o comentarios con otros estudiantes</p>
-          </div>
-        </header>
-
-        <Card className="glass border-white/10 rounded-[2.5rem] p-6 md:p-8 shadow-2xl">
-          <div className="flex gap-4 items-start mb-8">
-            <Avatar className="h-10 w-10 border border-white/10 shrink-0">
-              <AvatarImage src={studentPhoto} />
-              <AvatarFallback className="bg-indigo-600 text-white font-800 text-xs">
-                {studentName.substring(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 space-y-3">
-              <Textarea 
-                placeholder="Escribe un comentario..." 
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                className="bg-white/5 border-white/5 rounded-2xl min-h-[100px] resize-none focus:border-indigo-500/50 transition-colors uppercase text-xs font-bold tracking-tight placeholder:text-white/20"
-              />
-              <div className="flex justify-end">
-                <Button 
-                  onClick={handleSendComment}
-                  disabled={!newComment.trim() || isSendingComment}
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-6 h-10 uppercase text-[10px] font-800 tracking-widest flex gap-2 shadow-glow"
-                >
-                  {isSendingComment ? "Enviando..." : <><Send className="w-3.5 h-3.5" /> Publicar_</>}
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-6">
-            {comments.length === 0 ? (
-              <div className="text-center py-12 border-2 border-dashed border-white/5 rounded-3xl">
-                <p className="text-[10px] font-800 uppercase tracking-widest text-white/20">No hay comentarios aún. ¡Sé el primero!</p>
-              </div>
-            ) : (
-              comments.map((comment) => (
-                <div key={comment.id} className="flex gap-4 items-start group">
-                  <Avatar className="h-8 w-8 border border-white/5 shrink-0">
-                    <AvatarImage src={comment.userPhoto} />
-                    <AvatarFallback className="bg-zinc-800 text-white/40 font-800 text-[10px]">
-                      {comment.userName.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-800 uppercase tracking-tighter">{comment.userName}</span>
-                      <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">
-                        {comment.createdAt ? new Date(comment.createdAt.seconds * 1000).toLocaleDateString() : 'Justo ahora'}
-                      </span>
-                    </div>
-                    <p className="text-sm text-white/70 leading-relaxed font-medium">
-                      {comment.content}
-                    </p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </Card>
-      </div>
-
-      {/* Rating Dialog - Mandatory after finishing */}
-      <Dialog open={isRatingOpen} onOpenChange={setIsRatingOpen}>
+<Dialog open={isRatingOpen} onOpenChange={setIsRatingOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="text-3xl font-800 uppercase italic tracking-tighter">¡Mastery Achieved! 🎉</DialogTitle>

@@ -12,15 +12,22 @@ import { StudentDashboard } from "./components/student/StudentDashboard";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "./lib/firebase";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./components/ui/dialog";
-import { Smartphone, Download, CheckCircle } from "lucide-react";
+import { Smartphone, Download, CheckCircle, ExternalLink, Apple } from "lucide-react";
 import { Button } from "./components/ui/button";
 
 function MainLayout({ user }: { user: UserProfile }) {
   const [theme, setTheme] = useState(user.theme || "dark");
   const [isMobileAlertOpen, setIsMobileAlertOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [platform, setPlatform] = useState<"ios" | "android" | "other">("other");
 
   useEffect(() => {
+    // Detect platform
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    const isAndroid = /Android/.test(navigator.userAgent);
+    if (isIOS) setPlatform("ios");
+    else if (isAndroid) setPlatform("android");
+    
     document.documentElement.classList.toggle("dark", theme === "dark");
   }, [theme]);
 
@@ -79,6 +86,13 @@ function MainLayout({ user }: { user: UserProfile }) {
   }, []);
 
   const handleInstallClick = async () => {
+    // Check if we are in an iframe
+    const isInIframe = window.self !== window.top;
+    if (isInIframe) {
+      window.open(window.location.href, '_blank');
+      return;
+    }
+
     if (!deferredPrompt) {
       // If no prompt, it might be iOS or already installed but prompt missed
       console.log("No deferred prompt available");
@@ -88,12 +102,9 @@ function MainLayout({ user }: { user: UserProfile }) {
 
     // Show the install prompt
     try {
-      // Check if we are in an iframe
-      const isInIframe = window.self !== window.top;
-      if (isInIframe) {
-        console.warn("PWA installation is limited inside iframes. Using standalone link.");
-        // Prompt user to open in new tab if we can't show prompt inside iframe
-        alert("Para instalar la aplicación real, ábrela en una pestaña nueva usando el botón superior derecho del editor o el link externo.");
+      if (platform === "ios") {
+        // iOS doesn't support programmatic prompt
+        alert("Para instalar en iOS: Pulsa el icono 'Compartir' en Safari y luego 'Añadir a la pantalla de inicio'.");
         return;
       }
 
@@ -178,17 +189,33 @@ function MainLayout({ user }: { user: UserProfile }) {
           </div>
 
           <DialogFooter className="flex flex-col gap-3 pb-2 pt-2">
-            <Button 
-              className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-xs tracking-widest rounded-2xl shadow-glow flex gap-3 transition-all active:scale-95"
-              onClick={handleInstallClick}
-            >
-              <Smartphone className="w-5 h-5" /> INSTALAR AHORA_
-            </Button>
+            {window.self !== window.top ? (
+              <Button 
+                className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-xs tracking-widest rounded-2xl shadow-glow flex gap-3 transition-all active:scale-95"
+                onClick={() => window.open(window.location.href, '_blank')}
+              >
+                <ExternalLink className="w-5 h-5" /> ABRIR PARA INSTALAR_
+              </Button>
+            ) : (
+              <Button 
+                className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-xs tracking-widest rounded-2xl shadow-glow flex gap-3 transition-all active:scale-95"
+                onClick={handleInstallClick}
+                disabled={platform === "ios" && !deferredPrompt}
+              >
+                {platform === "ios" ? <Apple className="w-5 h-5" /> : <Smartphone className="w-5 h-5" />}
+                {platform === "ios" ? 'GUÍA DE INSTALACIÓN_' : 'INSTALAR APLICACIÓN_'}
+              </Button>
+            )}
+            
             <div className="px-2">
               <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold text-center leading-relaxed">
-                {deferredPrompt 
-                  ? "Presiona el botón para abrir el instalador oficial de tu sistema operativo y tener acceso directo total."
-                  : "Si no tienes el botón, usa 'Añadir a pantalla de inicio' en el botón compartir de tu navegador móvil."}
+                {window.self !== window.top 
+                  ? "Para instalar la aplicación real, primero debes abrirla en una pestaña propia fuera de la vista previa."
+                  : platform === "ios"
+                    ? "En iOS, pulsa Compartir > 'Añadir a pantalla de inicio' para instalar como App oficial."
+                    : deferredPrompt 
+                      ? "Presiona el botón para abrir el instalador oficial de tu sistema para tener acceso total."
+                      : "La instalación automática dependerá de tu navegador móvil y estado de conexión."}
               </p>
             </div>
             <Button 

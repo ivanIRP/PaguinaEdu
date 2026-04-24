@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { db } from "../../lib/firebase";
 import { collection, addDoc, onSnapshot, serverTimestamp, query, orderBy, deleteDoc, doc, updateDoc } from "firebase/firestore";
-import { UserProfile, Teacher, Course, Enrollment, Specialty, Lesson } from "../../types";
+import { UserProfile, Teacher, Course, Enrollment, Specialty, Lesson, Comment } from "../../types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
@@ -9,8 +9,9 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
-import { Users, BookOpen, BarChart3, Plus, Trash2, LayoutDashboard, Settings, Edit, ArrowUp, ArrowDown, ExternalLink, Upload, Eye } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { Users, BookOpen, BarChart3, Plus, Trash2, LayoutDashboard, Settings, Edit, ArrowUp, ArrowDown, ExternalLink, Upload, Eye, MessageSquare, TrendingUp, Star, CheckCircle2 } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
+import { motion } from "motion/react";
 
 import { CoursePlayer } from "../student/CoursePlayer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
@@ -20,6 +21,7 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Form states
@@ -54,12 +56,16 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
     const unsubSpecialties = onSnapshot(collection(db, "specialties"), (snap) => {
       setSpecialties(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Specialty)));
     });
+    const unsubComments = onSnapshot(query(collection(db, "comments"), orderBy("createdAt", "desc")), (snap) => {
+      setComments(snap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Comment)));
+    });
 
     return () => {
       unsubTeachers();
       unsubCourses();
       unsubEnrollments();
       unsubSpecialties();
+      unsubComments();
     };
   }, []);
 
@@ -176,6 +182,11 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
     await deleteDoc(doc(db, "courses", id));
   };
 
+  const deleteComment = async (id: string) => {
+    if (!confirm("¿Eliminar este comentario permanentemente?")) return;
+    await deleteDoc(doc(db, "comments", id));
+  };
+
   // Stats calculation
   const statsData = courses.map(course => {
     const courseEnrollments = enrollments.filter(e => e.courseId === course.id && e.rating !== undefined);
@@ -220,6 +231,9 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
             </TabsTrigger>
             <TabsTrigger value="stats" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-3 md:px-5 py-1.5 transition-all md:uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
               <BarChart3 className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Reportes</span>
+            </TabsTrigger>
+            <TabsTrigger value="community" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-3 md:px-5 py-1.5 transition-all md:uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
+              <MessageSquare className="w-3.5 h-3.5" /> <span className="hidden xs:inline">Comentarios</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -556,49 +570,171 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
            </div>
         </TabsContent>
 
-        <TabsContent value="stats">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card>
-              <CardHeader>
-                <CardTitle>Top 5 Cursos con Mejor Calificación</CardTitle>
-                <CardDescription>Puntaje promedio basado en reseñas de usuarios.</CardDescription>
-              </CardHeader>
-              <CardContent className="h-[400px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={statsData} layout="vertical" margin={{ left: 40, right: 40, top: 20, bottom: 20 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-                    <XAxis type="number" domain={[0, 5]} hide />
-                    <YAxis dataKey="name" type="category" width={120} />
-                    <Tooltip />
-                    <Bar dataKey="score" radius={[0, 4, 4, 0]}>
-                       {statsData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+        <TabsContent value="stats" className="w-full">
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="glass border-white/5 p-6 space-y-2">
+                <div className="flex justify-between items-center text-white/30 truncate">
+                  <span className="text-[10px] font-800 uppercase tracking-widest">Popularidad Avg</span>
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+                <div className="text-3xl font-900 border-l-2 border-indigo-500 pl-3">
+                  {(enrollments.length / (courses.length || 1)).toFixed(1)}
+                  <span className="text-[10px] font-bold text-white/20 ml-2">alumnos/curso</span>
+                </div>
+              </Card>
+              <Card className="glass border-white/5 p-6 space-y-2">
+                <div className="flex justify-between items-center text-white/30">
+                  <span className="text-[10px] font-800 uppercase tracking-widest">Feedback Activo</span>
+                  <MessageSquare className="w-4 h-4" />
+                </div>
+                <div className="text-3xl font-900 border-l-2 border-purple-500 pl-3">
+                  {comments.length}
+                  <span className="text-[10px] font-bold text-white/20 ml-2">comentarios_</span>
+                </div>
+              </Card>
+              <Card className="glass border-white/5 p-6 space-y-2">
+                <div className="flex justify-between items-center text-white/30">
+                  <span className="text-[10px] font-800 uppercase tracking-widest">Satisfacción</span>
+                  <Star className="w-4 h-4" />
+                </div>
+                <div className="text-3xl font-900 border-l-2 border-yellow-500 pl-3">
+                  {(enrollments.filter(e => e.rating).reduce((acc, curr) => acc + (curr.rating || 0), 0) / (enrollments.filter(e => e.rating).length || 1)).toFixed(1)}
+                  <span className="text-[10px] font-bold text-white/20 ml-2">avg stars_</span>
+                </div>
+              </Card>
+              <Card className="glass border-white/5 p-6 space-y-2">
+                <div className="flex justify-between items-center text-white/30">
+                  <span className="text-[10px] font-800 uppercase tracking-widest">Tasa Completación</span>
+                  <CheckCircle2 className="w-4 h-4" />
+                </div>
+                <div className="text-3xl font-900 border-l-2 border-green-500 pl-3">
+                  {((enrollments.filter(e => e.isFinished).length / (enrollments.length || 1)) * 100).toFixed(0)}%
+                </div>
+              </Card>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Últimas reseñas</CardTitle>
-                <CardDescription>Comentarios y sugerencias de la comunidad.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                 {enrollments.filter(e => e.comment).slice(0, 6).map(e => (
-                   <div key={e.id} className="border-b pb-4 last:border-0 last:pb-0">
-                      <div className="flex justify-between items-start">
-                        <span className="font-bold text-sm">Curso: {courses.find(c => c.id === e.courseId)?.title}</span>
-                        <span className="text-yellow-500 font-bold">{"★".repeat(e.rating || 0)}</span>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <Card className="glass border-white/5 p-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle className="text-lg font-800 tracking-tighter uppercase italic">Popularidad (Enrollments)_</CardTitle>
+                  <CardDescription className="text-[10px] uppercase font-bold tracking-widest text-white/40">Cursos con mayor cantidad de estudiantes registrados</CardDescription>
+                </CardHeader>
+                <div className="h-[350px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={courses.map(c => ({
+                      name: c.title.substring(0, 15) + '...',
+                      students: enrollments.filter(e => e.courseId === c.id).length
+                    })).sort((a, b) => b.students - a.students)}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff10" />
+                      <XAxis dataKey="name" fontSize={10} tick={{ fill: "#ffffff40" }} />
+                      <YAxis fontSize={10} tick={{ fill: "#ffffff40" }} />
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#000', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                        itemStyle={{ fontSize: '10px', fontWeight: '800', textTransform: 'uppercase' }}
+                      />
+                      <Bar dataKey="students" radius={[4, 4, 0, 0]}>
+                        {courses.map((_, index) => (
+                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+
+              <Card className="glass border-white/5 p-6 space-y-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle className="text-lg font-800 tracking-tighter uppercase italic">Distribución de Ratings_</CardTitle>
+                </CardHeader>
+                <div className="space-y-4">
+                  {[5, 4, 3, 2, 1].map(star => {
+                    const count = enrollments.filter(e => e.rating === star).length;
+                    const percentage = (count / (enrollments.filter(e => e.rating).length || 1)) * 100;
+                    return (
+                      <div key={star} className="space-y-1">
+                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                          <span className="flex items-center gap-1">{star} <Star className="w-2.5 h-2.5 fill-yellow-500 text-yellow-500" /></span>
+                          <span className="text-white/40">{count} reviews</span>
+                        </div>
+                        <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                          <motion.div initial={{ width: 0 }} animate={{ width: `${percentage}%` }} className="h-full bg-indigo-500" />
+                        </div>
                       </div>
-                      <p className="text-sm italic text-muted-foreground mt-1">"{e.comment}"</p>
+                    );
+                  })}
+                </div>
+                <div className="pt-4 border-t border-white/5">
+                   <div className="text-[10px] font-800 text-white/30 uppercase tracking-widest mb-4">Top Courses By Rating</div>
+                   <div className="space-y-3">
+                      {statsData.map((s, i) => (
+                        <div key={i} className="flex justify-between items-center text-xs">
+                           <span className="font-bold truncate max-w-[200px]">{s.name}</span>
+                           <span className="text-indigo-400 font-900 italic">{s.score.toFixed(1)} ★</span>
+                        </div>
+                      ))}
                    </div>
-                 ))}
-                 {enrollments.filter(e => e.comment).length === 0 && <p className="text-center text-muted-foreground py-10">No hay reseñas aún.</p>}
-              </CardContent>
-            </Card>
+                </div>
+              </Card>
+            </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="community" className="w-full">
+          <Card className="glass border-white/5">
+            <CardHeader>
+              <CardTitle className="text-2xl font-900 tracking-tighter uppercase italic flex items-center gap-3">
+                <MessageSquare className="w-6 h-6 text-indigo-500" />
+                Feedback & Reviews_
+              </CardTitle>
+              <CardDescription className="text-xs uppercase font-bold tracking-widest text-white/40">Visualiza las reseñas finales de los estudiantes al completar sus cursos.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {enrollments.filter(e => e.comment).length === 0 ? (
+                  <div className="text-center py-24 border-2 border-dashed border-white/5 rounded-3xl opacity-20">
+                    <p className="font-800 uppercase tracking-widest text-sm">No hay reseñas aún_</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="border-white/5">
+                        <TableHead className="uppercase text-[10px] font-800">Curso</TableHead>
+                        <TableHead className="uppercase text-[10px] font-800">Review</TableHead>
+                        <TableHead className="uppercase text-[10px] font-800">Rating</TableHead>
+                        <TableHead className="uppercase text-[10px] font-800">Fecha</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {enrollments.filter(e => e.comment).map((review) => {
+                        const course = courses.find(c => c.id === review.courseId);
+                        return (
+                          <TableRow key={review.id} className="border-white/5 hover:bg-white/5 transition-colors">
+                            <TableCell className="text-xs font-bold text-indigo-400 uppercase tracking-tighter max-w-[200px] truncate">
+                              {course?.title || "Curso Eliminado"}
+                            </TableCell>
+                            <TableCell className="text-xs text-zinc-400 italic max-w-[400px] whitespace-normal leading-relaxed">
+                              "{review.comment}"
+                            </TableCell>
+                            <TableCell>
+                               <div className="flex gap-0.5 text-yellow-500">
+                                  {Array.from({ length: 5 }).map((_, i) => (
+                                    <Star key={i} className={`w-3 h-3 ${i < (review.rating || 0) ? 'fill-current' : 'opacity-20'}`} />
+                                  ))}
+                               </div>
+                            </TableCell>
+                            <TableCell className="text-[10px] font-bold text-white/20 uppercase whitespace-nowrap">
+                              {review.finishedAt ? new Date(review.finishedAt.seconds * 1000).toLocaleDateString() : '--'}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

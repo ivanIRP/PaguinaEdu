@@ -263,7 +263,7 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="glass border-white/5 p-8 rounded-[32px]">
+            <Card className="glass border-white/5 p-6 md:p-8 rounded-[32px]">
               <CardHeader className="p-0 mb-6">
                 <CardTitle className="text-2xl font-800 tracking-tighter uppercase italic flex items-center gap-3">
                   <TrendingUp className="w-6 h-6 text-indigo-500" />
@@ -277,7 +277,7 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
                   count: enrollments.filter(e => e.courseId === course.id).length
                 })).sort((a, b) => b.count - a.count).slice(0, 3).map((c, i) => (
                   <div key={c.id} className="flex items-center gap-4 group">
-                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-xl font-900 italic text-indigo-500 shadow-glow">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-lg md:text-xl font-900 italic text-indigo-500 shadow-glow">
                       0{i + 1}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -297,7 +297,7 @@ export function AdminDashboard({ user }: { user: UserProfile }) {
               </div>
             </Card>
 
-            <Card className="glass border-white/5 p-8 rounded-[32px]">
+            <Card className="glass border-white/5 p-6 md:p-8 rounded-[32px]">
               <CardHeader className="p-0 mb-6">
                 <CardTitle className="text-2xl font-800 tracking-tighter uppercase italic flex items-center gap-3">
                   <Star className="w-6 h-6 text-yellow-500" />

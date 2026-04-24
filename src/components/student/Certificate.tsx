@@ -21,24 +21,50 @@ export function Certificate({ course, enrollment, studentName }: CertificateProp
     const element = certificateRef.current;
     element.style.display = "block";
     
-    const canvas = await html2canvas(element, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
-    
-    const pdf = new jsPDF("landscape", "mm", "a4");
-    const width = pdf.internal.pageSize.getWidth();
-    const height = pdf.internal.pageSize.getHeight();
-    
-    pdf.addImage(imgData, "PNG", 0, 0, width, height);
-    pdf.save(`Certificado_${course.title.replace(/\s+/g, '_')}.pdf`);
-    
-    element.style.display = "none";
+    try {
+      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+      const imgData = canvas.toDataURL("image/png");
+      
+      const pdf = new jsPDF("landscape", "mm", "a4");
+      const width = pdf.internal.pageSize.getWidth();
+      const height = pdf.internal.pageSize.getHeight();
+      
+      pdf.addImage(imgData, "PNG", 0, 0, width, height);
+      pdf.save(`Certificado_${course.title.replace(/\s+/g, '_')}.pdf`);
+    } catch (error) {
+      console.error("Error generating certificate:", error);
+      alert("Error al generar el certificado. Por favor intenta de nuevo.");
+    } finally {
+      element.style.display = "none";
+    }
   };
 
   return (
-    <div className="w-full">
-      <Button onClick={downloadPDF} className="w-full flex gap-2 font-bold" variant="default">
-        <Download className="w-4 h-4" /> Descargar Certificado
-      </Button>
+    <div className="w-full space-y-4">
+      {/* Digital Badge Card Preview */}
+      <div className="glass border-emerald-500/20 bg-emerald-500/5 p-6 rounded-[2rem] relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+           <Award className="w-16 h-16 text-emerald-400" />
+        </div>
+        <div className="relative z-10">
+          <div className="text-[9px] font-800 text-emerald-400 uppercase tracking-widest mb-1">E-Certificate Verified</div>
+          <h4 className="text-lg font-800 uppercase tracking-tighter italic border-l-2 border-emerald-500 pl-3 mb-4">
+            {course.title}
+          </h4>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-8 rounded-full bg-emerald-600/20 flex items-center justify-center text-emerald-400">
+               <Award className="w-4 h-4" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold text-white/40 uppercase">Otorgado a</span>
+              <span className="text-xs font-800 uppercase tracking-tight">{studentName}</span>
+            </div>
+          </div>
+          <Button onClick={downloadPDF} className="w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl h-10 uppercase text-[10px] font-800 tracking-widest flex gap-2 shadow-glow">
+            <Download className="w-3.5 h-3.5" /> Descargar PDF_
+          </Button>
+        </div>
+      </div>
 
       {/* Hidden Certificate HTML for capture */}
       <div 

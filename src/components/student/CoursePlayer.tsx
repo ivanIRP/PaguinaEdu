@@ -92,7 +92,7 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
   return (
     <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 h-full min-h-0">
       {/* Sidebar - Lessons List */}
-      <aside className="w-full lg:w-96 flex flex-col h-[300px] md:h-[400px] lg:h-auto glass rounded-[24px] lg:rounded-[32px] overflow-hidden border-white/10 shrink-0 shadow-2xl">
+      <aside className="w-full lg:w-96 flex flex-col h-auto lg:h-auto glass rounded-[24px] lg:rounded-[32px] overflow-hidden border-white/10 shrink-0 shadow-2xl">
         <CardHeader className="p-8 border-b border-white/5 space-y-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={onBack} className="h-10 w-10 bg-white/5 rounded-xl hover:bg-white/10 transition-all shrink-0">
@@ -150,17 +150,6 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
             })}
           </div>
         </ScrollArea>
-        {enrollment.isFinished && (
-           <div className="p-4 md:p-6 bg-indigo-600/10 border-t border-indigo-500/20 mt-auto shrink-0">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white shadow-glow">
-                  <Star className="w-4 h-4 fill-current" />
-                </div>
-                <div className="text-[10px] font-800 uppercase tracking-widest text-indigo-400">Certificación Oficial</div>
-              </div>
-              <Certificate course={course} enrollment={enrollment} studentName={studentName} />
-           </div>
-        )}
       </aside>
 
       {/* Main Player Area */}
@@ -244,27 +233,34 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
         </div>
 
         {enrollment.isFinished && (
-          <div className="glass p-6 md:p-8 rounded-[2rem] border-indigo-500/20 bg-indigo-500/5 space-y-6">
+          <div className="glass p-5 md:p-8 rounded-[2rem] border-indigo-500/20 bg-indigo-500/5 space-y-6 mb-8 mt-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white">
-                 <Star className="w-6 h-6 fill-current" />
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shrink-0">
+                 <Star className="w-5 h-5 md:w-6 md:h-6 fill-current" />
               </div>
               <div>
-                <h3 className="text-xl font-800 uppercase tracking-tighter italic">¡Felicidades, {studentName}!</h3>
-                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Has completado este entrenamiento con éxito.</p>
+                <h3 className="text-lg md:text-xl font-800 uppercase tracking-tighter italic">¡Felicidades, {studentName}!</h3>
+                <p className="text-[9px] md:text-[10px] font-bold text-white/40 uppercase tracking-widest">Has completado este entrenamiento con éxito.</p>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                  <div className="text-[9px] font-800 text-white/20 uppercase tracking-widest mb-1">Tu Calificación</div>
-                  <div className="flex gap-1 text-yellow-500">
-                     {Array.from({ length: 5 }).map((_, i) => (
-                       <Star key={i} className={`w-4 h-4 ${i < (enrollment.rating || 0) ? 'fill-current' : 'opacity-10'}`} />
-                     ))}
-                  </div>
+                  <div className="text-[9px] font-800 text-white/20 uppercase tracking-widest mb-2">Tu Opinión</div>
+                  <Button 
+                    variant="link" 
+                    onClick={() => setIsRatingOpen(true)}
+                    className="p-0 h-auto text-indigo-400 font-900 uppercase text-[10px] tracking-widest flex items-center gap-2"
+                  >
+                    {enrollment.rating ? "Editar Reseña_" : "Dejar Reseña_"}
+                    <div className="flex gap-0.5 text-yellow-500">
+                       {Array.from({ length: 5 }).map((_, i) => (
+                         <Star key={i} className={`w-3 h-3 ${i < (enrollment.rating || 0) ? 'fill-current' : 'opacity-10'}`} />
+                       ))}
+                    </div>
+                  </Button>
                </div>
                <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                  <div className="text-[9px] font-800 text-white/20 uppercase tracking-widest mb-1">Documento Emitido</div>
+                  <div className="text-[9px] font-800 text-white/20 uppercase tracking-widest mb-2">Certificación</div>
                   <Certificate course={course} enrollment={enrollment} studentName={studentName} />
                </div>
             </div>

@@ -12,8 +12,9 @@ import { StudentDashboard } from "./components/student/StudentDashboard";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "./lib/firebase";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./components/ui/dialog";
-import { Smartphone, Download, CheckCircle, ExternalLink, Apple } from "lucide-react";
+import { Smartphone, Download, CheckCircle, ExternalLink, Apple, X } from "lucide-react";
 import { Button } from "./components/ui/button";
+import { motion, AnimatePresence } from "motion/react";
 
 function MainLayout({ user }: { user: UserProfile }) {
   const [theme, setTheme] = useState(user.theme || "dark");
@@ -131,8 +132,7 @@ function MainLayout({ user }: { user: UserProfile }) {
         currentTheme={theme} 
         onInstall={handleInstallClick}
         isInstallAvailable={!!deferredPrompt}
-      />
-      <main className="container mx-auto py-4 md:py-8 px-4">
+      />      <main className="container mx-auto py-4 md:py-8 px-4">
         {user.role === "admin" ? (
           <AdminDashboard user={user} />
         ) : (
@@ -140,91 +140,69 @@ function MainLayout({ user }: { user: UserProfile }) {
         )}
       </main>
 
-      {/* Mobile Alert / PWA Prompt */}
-      <Dialog open={isMobileAlertOpen} onOpenChange={setIsMobileAlertOpen}>
-        <DialogContent className="glass border-white/10 max-w-[90vw] md:max-w-md bg-zinc-950/90 backdrop-blur-2xl rounded-[32px] overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-indigo-600 shadow-glow" />
-          
-          <DialogHeader className="flex flex-col items-center gap-4 text-center pt-4">
-            <div className="bg-indigo-600/20 p-4 rounded-2xl border border-indigo-500/30 ring-4 ring-indigo-500/5">
-              <Smartphone className="w-8 h-8 text-indigo-400" />
-            </div>
-            <DialogTitle className="text-3xl font-800 tracking-tighter uppercase italic leading-none">
-              EduStream Móvil_
-            </DialogTitle>
-            <DialogDescription className="text-sm text-zinc-400 font-medium leading-relaxed max-w-[280px]">
-              Lleva tu aprendizaje a todas partes con nuestra aplicación oficial.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-3 py-4">
-            <div className="flex items-center gap-3 p-3 glass rounded-xl border-white/5 bg-white/5">
-              <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
-                <CheckCircle className="w-4 h-4 text-green-500" />
-              </div>
-              <p className="text-xs text-zinc-300 font-bold uppercase tracking-wide">Acceso instantáneo</p>
-            </div>
-            <div className="flex items-center gap-3 p-3 glass rounded-xl border-white/5 bg-white/5">
-              <div className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
-                <CheckCircle className="w-4 h-4 text-green-500" />
-              </div>
-              <p className="text-xs text-zinc-300 font-bold uppercase tracking-wide">Sin distracciones</p>
-            </div>
-          </div>
+      {/* Mobile PWA Notification Toast */}
+      <AnimatePresence>
+        {isMobileAlertOpen && (
+          <motion.div 
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-6 left-4 right-4 z-50 md:left-auto md:right-6 md:w-96"
+          >
+            <div className="glass border-white/10 bg-zinc-950/90 backdrop-blur-2xl rounded-[2rem] p-5 shadow-2xl relative overflow-hidden ring-1 ring-white/20">
+              <div className="absolute top-0 left-0 w-full h-1 bg-indigo-600 shadow-glow" />
+              
+              <button 
+                onClick={() => setIsMobileAlertOpen(false)}
+                className="absolute top-4 right-4 p-2 text-white/20 hover:text-white transition-colors"
+                aria-label="Cerrar"
+              >
+                <X className="w-4 h-4" />
+              </button>
 
-          <DialogFooter className="flex flex-col gap-3 pb-2 pt-2">
-            {window.self !== window.top ? (
-              <Button 
-                className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-xs tracking-widest rounded-2xl shadow-glow flex gap-3 transition-all active:scale-95"
-                onClick={() => window.open(window.location.href, '_blank')}
-              >
-                <ExternalLink className="w-5 h-5" /> ABRIR PARA INSTALAR_
-              </Button>
-            ) : (
-              <Button 
-                className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-xs tracking-widest rounded-2xl shadow-glow flex gap-3 transition-all active:scale-95"
-                onClick={handleInstallClick}
-                disabled={platform === "ios" && !deferredPrompt}
-              >
-                {platform === "ios" ? <Apple className="w-5 h-5" /> : <Smartphone className="w-5 h-5" />}
-                {platform === "ios" ? 'GUÍA DE INSTALACIÓN_' : 'INSTALAR APLICACIÓN_'}
-              </Button>
-            )}
-            
-            <div className="px-2">
-              <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold text-center leading-relaxed">
-                {window.self !== window.top 
-                  ? "Para instalar la aplicación real, primero debes abrirla en una pestaña propia fuera de la vista previa."
-                  : platform === "ios"
-                    ? "En iOS, pulsa Compartir > 'Añadir a pantalla de inicio' para instalar como App oficial."
-                    : deferredPrompt 
-                      ? "Presiona el botón para abrir el instalador oficial de tu sistema para tener acceso total."
-                      : "La instalación automática dependerá de tu navegador móvil y estado de conexión."}
-              </p>
+              <div className="flex items-start gap-4 pr-6">
+                <div className="bg-indigo-600/20 p-3 rounded-2xl border border-indigo-500/30 shrink-0">
+                  <Smartphone className="w-6 h-6 text-indigo-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-800 tracking-tighter uppercase italic leading-none mb-1">
+                    Instala la App_
+                  </h3>
+                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest leading-normal">
+                    Lleva EduStream a tu pantalla de inicio para una experiencia fluida.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 flex gap-2">
+                {window.self !== window.top ? (
+                  <Button 
+                    className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95"
+                    onClick={() => window.open(window.location.href, '_blank')}
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" /> ABRIR
+                  </Button>
+                ) : (
+                  <Button 
+                    className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95"
+                    onClick={handleInstallClick}
+                  >
+                    {platform === "ios" ? <Apple className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
+                    {platform === "ios" ? 'VER GUÍA' : 'INSTALAR'}
+                  </Button>
+                )}
+                <Button 
+                  variant="outline" 
+                  className="flex-1 h-12 border-white/10 text-zinc-400 hover:text-white font-900 uppercase text-[10px] tracking-widest rounded-xl"
+                  onClick={() => setIsMobileAlertOpen(false)}
+                >
+                  CERRAR
+                </Button>
+              </div>
             </div>
-            <Button 
-              variant="ghost" 
-              className="w-full h-10 text-zinc-500 text-[10px] font-bold uppercase tracking-widest hover:text-white"
-              onClick={() => {
-                setIsMobileAlertOpen(false);
-              }}
-            >
-              Continuar en el navegador
-            </Button>
-          </DialogFooter>
-          
-          {!deferredPrompt && (
-            <div className="mt-2 text-center bg-indigo-500/10 p-4 rounded-2xl border border-indigo-500/20">
-              <p className="text-[10px] text-indigo-300 uppercase tracking-widest font-900 mb-2">
-                Instalación Manual_
-              </p>
-              <p className="text-[9px] text-zinc-400 font-medium leading-relaxed">
-                Si no ves el botón de instalar, usa la opción <span className="text-white font-bold">"Añadir a pantalla de inicio"</span> en el menú de compartir de tu navegador.
-              </p>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

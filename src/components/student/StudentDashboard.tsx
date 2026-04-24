@@ -97,15 +97,15 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
       </header>
 
       <Tabs defaultValue="browser" className="w-full">
-        <TabsList className="glass p-1 h-auto w-full md:w-fit mb-8 gap-1 overflow-x-auto justify-start md:justify-center no-scrollbar border-white/5">
-          <TabsTrigger value="browser" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-6 py-2 transition-all uppercase text-[10px] font-bold tracking-widest flex gap-2 shrink-0">
-            <Search className="w-3.5 h-3.5" /> Explorar
+        <TabsList className="glass p-2 h-auto w-full md:w-fit mb-8 gap-2 overflow-x-auto justify-start md:justify-center no-scrollbar border-white/5 shadow-2xl">
+          <TabsTrigger value="browser" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-xl px-8 py-3 transition-all uppercase text-[11px] font-800 tracking-widest flex gap-2 shrink-0">
+            <Search className="w-4 h-4" /> Explorar
           </TabsTrigger>
-          <TabsTrigger value="my-courses" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-6 py-2 transition-all uppercase text-[10px] font-bold tracking-widest flex gap-2 shrink-0">
-            <BookOpen className="w-3.5 h-3.5" /> Mis Cursos
+          <TabsTrigger value="my-courses" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-xl px-8 py-3 transition-all uppercase text-[11px] font-800 tracking-widest flex gap-2 shrink-0">
+            <BookOpen className="w-4 h-4" /> Mis Cursos
           </TabsTrigger>
-          <TabsTrigger value="profile" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-6 py-2 transition-all uppercase text-[10px] font-bold tracking-widest flex gap-2 shrink-0">
-            <User className="w-3.5 h-3.5" /> Perfil
+          <TabsTrigger value="profile" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-xl px-8 py-3 transition-all uppercase text-[11px] font-800 tracking-widest flex gap-2 shrink-0">
+            <User className="w-4 h-4" /> Perfil
           </TabsTrigger>
         </TabsList>
 

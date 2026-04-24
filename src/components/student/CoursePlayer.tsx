@@ -88,9 +88,9 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
   const progress = Math.round((enrollment.completedLessonIds.length / sortedLessons.length) * 100);
 
   return (
-    <div className="flex flex-col lg:flex-row gap-8 h-full min-h-0">
+    <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 h-full min-h-0">
       {/* Sidebar - Lessons List */}
-      <aside className="w-full lg:w-96 flex flex-col h-[500px] lg:h-auto glass rounded-[32px] overflow-hidden border-white/10 shrink-0 shadow-2xl">
+      <aside className="w-full lg:w-96 flex flex-col h-[300px] md:h-[400px] lg:h-auto glass rounded-[24px] lg:rounded-[32px] overflow-hidden border-white/10 shrink-0 shadow-2xl">
         <CardHeader className="p-8 border-b border-white/5 space-y-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={onBack} className="h-10 w-10 bg-white/5 rounded-xl hover:bg-white/10 transition-all shrink-0">

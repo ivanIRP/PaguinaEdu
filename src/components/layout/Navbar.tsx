@@ -25,14 +25,14 @@ interface NavbarProps {
 export function Navbar({ user, onToggleTheme, currentTheme, onInstall, isInstallAvailable }: NavbarProps) {
   return (
     <nav className="border-b border-white/5 glass sticky top-0 z-50">
-      <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="bg-indigo-600 p-2 rounded-xl border border-white/20 shadow-glow">
-            <GraduationCap className="w-6 h-6 text-white" />
+      <div className="container mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="bg-indigo-600 p-2 rounded-xl border border-white/20 shadow-glow shrink-0">
+            <GraduationCap className="w-5 h-5 md:w-6 md:h-6 text-white" />
           </div>
           <div className="flex flex-col">
-            <span className="font-800 text-2xl tracking-tighter uppercase italic text-indigo-500 leading-none">EduStream_</span>
-            <span className="text-[9px] uppercase tracking-[0.3em] opacity-40">Core learning v2.4</span>
+            <span className="font-800 text-xl md:text-2xl tracking-tighter uppercase italic text-indigo-500 leading-none">EduStream_</span>
+            <span className="text-[7px] md:text-[9px] uppercase tracking-[0.2em] md:tracking-[0.3em] opacity-40">Core learning v2.4</span>
           </div>
         </div>
 

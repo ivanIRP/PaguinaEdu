@@ -86,28 +86,30 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
 
   return (
     <div className="space-y-12">
-      <header className="flex justify-between items-end">
-        <div className="space-y-2">
-          <div className="text-sm font-bold text-indigo-500 uppercase tracking-[0.3em]">Student • Portal</div>
-          <h1 className="text-6xl md:text-8xl font-800 tracking-tighter leading-none uppercase">
+      <header className="mb-8">
+        <div className="space-y-1">
+          <div className="text-[10px] md:text-xs font-bold text-indigo-500 uppercase tracking-widest opacity-80">Student • Portal</div>
+          <h1 className="text-4xl md:text-7xl font-900 tracking-tighter leading-none uppercase">
             Hola, {user.fullName.split(" ")[0]}<br />
-            <span className="bold-stroke opacity-60">Learning_</span>
+            <span className="bold-stroke opacity-40">Learning_</span>
           </h1>
         </div>
       </header>
 
-      <Tabs defaultValue="browser" className="w-full flex flex-col" orientation="horizontal">
-        <TabsList className="glass p-1 h-10 w-fit mb-8 gap-1 border-white/5 bg-white/5 rounded-xl border self-start flex shrink-0">
-          <TabsTrigger value="browser" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 py-1.5 transition-all uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
-            <Search className="w-3.5 h-3.5" /> Explorar
-          </TabsTrigger>
-          <TabsTrigger value="my-courses" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 py-1.5 transition-all uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
-            <BookOpen className="w-3.5 h-3.5" /> Mis Cursos
-          </TabsTrigger>
-          <TabsTrigger value="profile" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 py-1.5 transition-all uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
-            <User className="w-3.5 h-3.5" /> Perfil
-          </TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="browser" className="w-full flex flex-col items-start" orientation="horizontal">
+        <div className="w-full overflow-x-auto no-scrollbar mb-8 -mx-4 px-4 md:mx-0 md:px-0">
+          <TabsList className="glass p-1 h-11 w-max min-w-full md:min-w-0 md:w-auto gap-1 border-white/5 bg-white/5 rounded-xl border flex shrink-0">
+            <TabsTrigger value="browser" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 py-1.5 transition-all uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
+              <Search className="w-3.5 h-3.5" /> Explorar
+            </TabsTrigger>
+            <TabsTrigger value="my-courses" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 py-1.5 transition-all uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
+              <BookOpen className="w-3.5 h-3.5" /> Mis Cursos
+            </TabsTrigger>
+            <TabsTrigger value="profile" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white rounded-lg px-4 py-1.5 transition-all uppercase text-[10px] font-bold tracking-widest flex items-center gap-2 shrink-0">
+              <User className="w-3.5 h-3.5" /> Perfil
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="browser" className="pt-0">
           <div className="flex items-center gap-2 mb-8 overflow-x-auto no-scrollbar pb-2">

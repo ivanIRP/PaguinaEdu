@@ -74,18 +74,15 @@ function MainLayout({ user }: { user: UserProfile }) {
     // Check if we are in an iframe
     const isInIframe = window.self !== window.top;
     if (isInIframe) {
-      window.open(window.location.href, '_blank');
+      const confirmOpen = window.confirm("Para instalar la aplicación real, debemos abrirla en una pestaña nueva del navegador. ¿Deseas continuar?");
+      if (confirmOpen) {
+        window.open(window.location.href, '_blank');
+      }
       return;
     }
 
-    if (!deferredPrompt) {
-      // If no prompt, it might be iOS or already installed but prompt missed
-      console.log("No deferred prompt available");
-      if (platform === "ios") {
-        alert("En iOS, pulsa el botón 'Compartir' y luego 'Añadir a pantalla de inicio'.");
-      } else {
-        alert("Si no ves la opción de instalar, busca 'Instalar aplicación' o 'Añadir a pantalla de inicio' en el menú de ajustes de tu navegador.");
-      }
+    if (!deferredPrompt && platform !== "ios") {
+      alert("Instalación Manual:\n1. Pulsa los tres puntos (⋮) o el icono de ajustes de tu navegador.\n2. Busca y elige 'Instalar aplicación' o 'Añadir a pantalla de inicio'.");
       setIsMobileAlertOpen(false);
       return;
     }
@@ -93,28 +90,21 @@ function MainLayout({ user }: { user: UserProfile }) {
     // Show the install prompt
     try {
       if (platform === "ios") {
-        // iOS doesn't support programmatic prompt
-        alert("Para instalar en iOS: Pulsa el icono 'Compartir' en Safari y luego 'Añadir a la pantalla de inicio'.");
+        alert("Instalación en iPhone/iPad:\n1. Pulsa el icono de 'Compartir' (el cuadrado con flecha)\n2. Busca y elige 'Añadir a la pantalla de inicio'\n3. Pulsa 'Añadir'");
+        setIsMobileAlertOpen(false);
         return;
       }
 
-      await deferredPrompt.prompt();
-      
-      // Wait for the user to respond to the prompt
-      const choiceResult = await deferredPrompt.userChoice;
-      console.log(`User response to the install prompt: ${choiceResult.outcome}`);
-      
-      if (choiceResult.outcome === 'accepted') {
-        console.log('User accepted the install prompt');
-        sessionStorage.setItem('pwa_alert_seen', 'true');
-      } else {
-        console.log('User dismissed the install prompt');
+      if (deferredPrompt) {
+        await deferredPrompt.prompt();
+        const choiceResult = await deferredPrompt.userChoice;
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        }
       }
     } catch (err) {
       console.error("Installation failed:", err);
     } finally {
-      // Always clear the prompt and close the dialog
-      setDeferredPrompt(null);
       setIsMobileAlertOpen(false);
     }
   };
@@ -172,10 +162,12 @@ function MainLayout({ user }: { user: UserProfile }) {
                 </div>
                 <div>
                   <h3 className="text-lg font-800 tracking-tighter uppercase italic leading-none mb-1">
-                    Instala la App_
+                    Instalar App Móvil_
                   </h3>
                   <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest leading-normal">
-                    Para instalar, primero pulsa ABRIR y luego busca "Instalar" o "Añadir a pantalla" en tu navegador.
+                    {window.self !== window.top 
+                      ? "PWA: Debido a restricciones de seguridad, primero pulsa ABRIR y luego instala desde tu navegador."
+                      : "Obtén la experiencia completa de aplicación instalándola en tu pantalla de inicio como App móvil."}
                   </p>
                 </div>
               </div>
@@ -186,7 +178,7 @@ function MainLayout({ user }: { user: UserProfile }) {
                     className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95"
                     onClick={() => window.open(window.location.href, '_blank')}
                   >
-                    <ExternalLink className="w-3.5 h-3.5" /> ABRIR EN PESTAÑA_
+                    <ExternalLink className="w-3.5 h-3.5" /> ABRIR PARA INSTALAR_
                   </Button>
                 ) : (
                   <Button 
@@ -194,7 +186,7 @@ function MainLayout({ user }: { user: UserProfile }) {
                     onClick={handleInstallClick}
                   >
                     {platform === "ios" ? <Apple className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
-                    {platform === "ios" ? 'VER GUÍA' : 'INSTALAR'}
+                    {platform === "ios" ? 'VER GUÍA' : 'INSTALAR AHORA'}
                   </Button>
                 )}
                 <Button 

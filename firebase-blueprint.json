@@ -73,6 +73,20 @@
         "finishedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["userId", "courseId"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "Public comments on a course",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userPhoto": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["courseId", "userId", "userName", "content"]
     }
   },
   "firestore": {
@@ -95,6 +109,10 @@
     "enrollments/{enrollmentId}": {
       "schema": "Enrollment",
       "description": "Course progress tracking"
+    },
+    "comments/{commentId}": {
+      "schema": "Comment",
+      "description": "Course public comments"
     }
   }
 }

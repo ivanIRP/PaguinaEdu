@@ -182,8 +182,15 @@ function MainLayout({ user }: { user: UserProfile }) {
               className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-xs tracking-widest rounded-2xl shadow-glow flex gap-3 transition-all active:scale-95"
               onClick={handleInstallClick}
             >
-              <Smartphone className="w-5 h-5" /> INSTALAR APLICACIÓN_
+              <Smartphone className="w-5 h-5" /> INSTALAR AHORA_
             </Button>
+            <div className="px-2">
+              <p className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold text-center leading-relaxed">
+                {deferredPrompt 
+                  ? "Presiona el botón para abrir el instalador oficial de tu sistema operativo y tener acceso directo total."
+                  : "Si no tienes el botón, usa 'Añadir a pantalla de inicio' en el botón compartir de tu navegador móvil."}
+              </p>
+            </div>
             <Button 
               variant="ghost" 
               className="w-full h-10 text-zinc-500 text-[10px] font-bold uppercase tracking-widest hover:text-white"

@@ -50,3 +50,13 @@ export interface Enrollment {
   comment?: string;
   finishedAt?: Timestamp;
 }
+
+export interface Comment {
+  id: string;
+  courseId: string;
+  userId: string;
+  userName: string;
+  userPhoto: string;
+  content: string;
+  createdAt: Timestamp;
+}

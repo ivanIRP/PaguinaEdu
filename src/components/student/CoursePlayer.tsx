@@ -1,12 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import ReactPlayer from "react-player";
 import { db } from "../../lib/firebase";
-import { doc, updateDoc, arrayUnion, serverTimestamp } from "firebase/firestore";
-import { Course, Enrollment, Lesson, Teacher, Specialty } from "../../types";
+import { doc, updateDoc, arrayUnion, serverTimestamp, collection, query, where, orderBy, onSnapshot, addDoc } from "firebase/firestore";
+import { Course, Enrollment, Lesson, Teacher, Specialty, Comment } from "../../types";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../ui/card";
 import { ScrollArea } from "../ui/scroll-area";
-import { ArrowLeft, Play, CheckCircle2, Lock, Star, MessageSquare, Download } from "lucide-react";
+import { ArrowLeft, Play, CheckCircle2, Lock, Star, MessageSquare, Download, Send, User } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Textarea } from "../ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../ui/dialog";
@@ -14,28 +14,71 @@ import { Progress } from "../ui/progress";
 import { Certificate } from "./Certificate";
 import { motion, AnimatePresence } from "motion/react";
 import { Label } from "../ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 interface CoursePlayerProps {
   course: Course;
   enrollment: Enrollment;
   studentName: string;
+  studentPhoto?: string;
   teachers: Teacher[];
   specialties: Specialty[];
   onBack: () => void;
 }
 
-export function CoursePlayer({ course, enrollment: initialEnrollment, studentName, teachers, specialties, onBack }: CoursePlayerProps) {
+export function CoursePlayer({ course, enrollment: initialEnrollment, studentName, studentPhoto, teachers, specialties, onBack }: CoursePlayerProps) {
   const [enrollment, setEnrollment] = useState(initialEnrollment);
   const sortedLessons = useMemo(() => [...course.lessons].sort((a, b) => (a.order || 0) - (b.order || 0)), [course.lessons]);
   const [activeLesson, setActiveLesson] = useState<Lesson>(sortedLessons[0]);
   const [isRatingOpen, setIsRatingOpen] = useState(false);
   const [rating, setRating] = useState(0);
-  const [comment, setComment] = useState("");
+  const [commentText, setCommentText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [isSendingComment, setIsSendingComment] = useState(false);
 
   const teacher = teachers.find(t => t.id === course.teacherId);
   const specialty = specialties.find(s => s.id === teacher?.specialtyId);
+
+  // Fetch comments
+  useEffect(() => {
+    if (course.id === "preview") return;
+
+    const q = query(
+      collection(db, "comments"),
+      where("courseId", "==", course.id),
+      orderBy("createdAt", "desc")
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Comment));
+      setComments(data);
+    });
+
+    return () => unsubscribe();
+  }, [course.id]);
+
+  const handleSendComment = async () => {
+    if (!newComment.trim() || isSendingComment) return;
+    setIsSendingComment(true);
+    try {
+      await addDoc(collection(db, "comments"), {
+        courseId: course.id,
+        userId: enrollment.userId,
+        userName: studentName,
+        userPhoto: studentPhoto || "",
+        content: newComment.trim(),
+        createdAt: serverTimestamp()
+      });
+      setNewComment("");
+    } catch (error) {
+      console.error("Error sending comment:", error);
+    } finally {
+      setIsSendingComment(false);
+    }
+  };
 
   // Sequential Logic: A lesson is unlocked if it's the first one or the previous one is completed.
   const isLessonUnlocked = (lessonId: string) => {
@@ -68,19 +111,19 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
   };
 
   const handleFinishCourse = async () => {
-    if (rating === 0 || !comment) return;
+    if (rating === 0 || !commentText) return;
     setIsSubmitting(true);
     
     if (course.id !== "preview") {
       await updateDoc(doc(db, "enrollments", enrollment.id), {
         isFinished: true,
         rating,
-        comment,
+        comment: commentText,
         finishedAt: serverTimestamp()
       });
     }
     
-    setEnrollment(prev => ({ ...prev, isFinished: true, rating, comment }));
+    setEnrollment(prev => ({ ...prev, isFinished: true, rating, comment: commentText }));
     setIsRatingOpen(false);
     setIsSubmitting(false);
   };
@@ -157,14 +200,14 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
 
       {/* Main Player Area */}
       <main className="flex-1 flex flex-col min-w-0 pb-12">
-        <header className="mb-6 space-y-2">
-           <div className="text-xs font-bold text-indigo-500 uppercase tracking-[0.3em]">Module • Video Training</div>
-           <h1 className="text-4xl md:text-5xl lg:text-7xl font-800 tracking-tighter leading-[0.9] uppercase break-words">
+        <header className="mb-4 lg:mb-6 space-y-2">
+           <div className="text-[10px] md:text-xs font-bold text-indigo-500 uppercase tracking-[0.3em]">Module • Video Training</div>
+           <h1 className="text-2xl md:text-5xl lg:text-7xl font-800 tracking-tighter leading-[0.9] uppercase break-words">
              {activeLesson.title}
            </h1>
         </header>
 
-        <div className="relative aspect-video rounded-[2rem] lg:rounded-[3rem] overflow-hidden border border-white/10 shadow-3xl bg-black group mb-8">
+        <div className="relative aspect-video rounded-2xl md:rounded-[2rem] lg:rounded-[3rem] overflow-hidden border border-white/10 shadow-3xl bg-black group mb-6 md:mb-8">
            <AnimatePresence mode="wait">
              <motion.div
                key={activeLesson.id}
@@ -202,25 +245,25 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
            )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-           <div className="glass p-6 rounded-[2.5rem] border-white/10 flex items-center justify-between">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+           <div className="glass p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] border-white/10 flex items-center justify-between">
               <div>
-                <div className="text-[10px] uppercase font-800 text-white/30 tracking-widest mb-2 px-1">Professor</div>
+                <div className="text-[9px] uppercase font-800 text-white/30 tracking-widest mb-2 px-1">Professor</div>
                 <div className="flex items-center gap-3">
-                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 border border-white/20 shadow-glow shrink-0 overflow-hidden" />
-                   <div className="flex flex-col">
-                      <div className="text-sm font-800 uppercase tracking-tighter leading-none">{teacher?.name || "Specialist"}</div>
-                      <div className="text-[10px] font-bold text-indigo-400 uppercase tracking-tighter mt-1">{specialty?.name || "Senior Lead"}</div>
+                   <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 border border-white/20 shadow-glow shrink-0 overflow-hidden" />
+                   <div className="flex flex-col min-w-0">
+                      <div className="text-xs md:text-sm font-800 uppercase tracking-tighter leading-none truncate">{teacher?.name || "Specialist"}</div>
+                      <div className="text-[9px] font-bold text-indigo-400 uppercase tracking-tighter mt-1 truncate">{specialty?.name || "Senior Lead"}</div>
                    </div>
                 </div>
               </div>
            </div>
            
-           <div className="glass p-6 rounded-[2.5rem] border-white/10">
-              <div className="text-[10px] uppercase font-800 text-white/30 tracking-widest mb-2 px-1">Course Content</div>
+           <div className="glass p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] border-white/10 flex flex-col justify-center">
+              <div className="text-[9px] uppercase font-800 text-white/30 tracking-widest mb-1 px-1">Course Content</div>
               <div className="flex items-end justify-between">
-                 <div className="text-3xl font-800 italic uppercase leading-none">{sortedLessons.length}</div>
-                 <div className="text-[10px] text-white/40 font-bold uppercase tracking-tighter">Total Lessons</div>
+                 <div className="text-2xl md:text-3xl font-800 italic uppercase leading-none">{sortedLessons.length}</div>
+                 <div className="text-[9px] text-white/40 font-bold uppercase tracking-tighter">Total Lessons</div>
               </div>
            </div>
 
@@ -236,47 +279,118 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
         </div>
       </main>
 
+      {/* Comments Section */}
+      <div className="mt-12 space-y-8">
+        <header className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 flex items-center justify-center text-indigo-400">
+            <MessageSquare className="w-6 h-6" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-800 uppercase tracking-tighter italic">Comunidad • Feedback_</h2>
+            <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Comparte tus dudas o comentarios con otros estudiantes</p>
+          </div>
+        </header>
+
+        <Card className="glass border-white/10 rounded-[2.5rem] p-6 md:p-8 shadow-2xl">
+          <div className="flex gap-4 items-start mb-8">
+            <Avatar className="h-10 w-10 border border-white/10 shrink-0">
+              <AvatarImage src={studentPhoto} />
+              <AvatarFallback className="bg-indigo-600 text-white font-800 text-xs">
+                {studentName.substring(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 space-y-3">
+              <Textarea 
+                placeholder="Escribe un comentario..." 
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                className="bg-white/5 border-white/5 rounded-2xl min-h-[100px] resize-none focus:border-indigo-500/50 transition-colors uppercase text-xs font-bold tracking-tight placeholder:text-white/20"
+              />
+              <div className="flex justify-end">
+                <Button 
+                  onClick={handleSendComment}
+                  disabled={!newComment.trim() || isSendingComment}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl px-6 h-10 uppercase text-[10px] font-800 tracking-widest flex gap-2 shadow-glow"
+                >
+                  {isSendingComment ? "Enviando..." : <><Send className="w-3.5 h-3.5" /> Publicar_</>}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {comments.length === 0 ? (
+              <div className="text-center py-12 border-2 border-dashed border-white/5 rounded-3xl">
+                <p className="text-[10px] font-800 uppercase tracking-widest text-white/20">No hay comentarios aún. ¡Sé el primero!</p>
+              </div>
+            ) : (
+              comments.map((comment) => (
+                <div key={comment.id} className="flex gap-4 items-start group">
+                  <Avatar className="h-8 w-8 border border-white/5 shrink-0">
+                    <AvatarImage src={comment.userPhoto} />
+                    <AvatarFallback className="bg-zinc-800 text-white/40 font-800 text-[10px]">
+                      {comment.userName.substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-800 uppercase tracking-tighter">{comment.userName}</span>
+                      <span className="text-[9px] font-bold text-white/20 uppercase tracking-widest">
+                        {comment.createdAt ? new Date(comment.createdAt.seconds * 1000).toLocaleDateString() : 'Justo ahora'}
+                      </span>
+                    </div>
+                    <p className="text-sm text-white/70 leading-relaxed font-medium">
+                      {comment.content}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </Card>
+      </div>
+
       {/* Rating Dialog - Mandatory after finishing */}
       <Dialog open={isRatingOpen} onOpenChange={setIsRatingOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-display">¡Felicidades por terminar! 🎉</DialogTitle>
-            <DialogDescription>
-              Tu opinión es fundamental para nosotros. Califica el curso para obtener tu certificado.
+            <DialogTitle className="text-3xl font-800 uppercase italic tracking-tighter">¡Mastery Achieved! 🎉</DialogTitle>
+            <DialogDescription className="uppercase text-[10px] font-bold tracking-widest opacity-60">
+              Tu feedback es vital para la comunidad_
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-6 py-4">
+          <div className="space-y-8 py-6">
             <div className="space-y-4">
-              <Label className="text-lg">Calidad del curso</Label>
-              <div className="flex justify-center gap-2">
+              <Label className="uppercase text-[10px] font-800 tracking-widest text-indigo-400">Calidad del Training</Label>
+              <div className="flex justify-center gap-3">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
                     onClick={() => setRating(star)}
-                    className={`transition-transform hover:scale-110 ${rating >= star ? "text-yellow-500" : "text-muted"}`}
+                    className={`transition-all hover:scale-125 ${rating >= star ? "text-indigo-500 shadow-glow" : "text-white/10"}`}
                   >
-                    <Star className={`w-8 h-8 ${rating >= star ? "fill-current" : ""}`} />
+                    <Star className={`w-10 h-10 ${rating >= star ? "fill-current" : ""}`} />
                   </button>
                 ))}
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>Comentario y Sugerencias</Label>
+            <div className="space-y-3">
+              <Label className="uppercase text-[10px] font-800 tracking-widest text-indigo-400">Review Final_</Label>
               <Textarea 
                 placeholder="¿Qué te pareció el curso? ¿Qué mejorarías?" 
-                value={comment}
-                onChange={e => setComment(e.target.value)}
-                className="min-h-[100px]"
+                value={commentText}
+                onChange={e => setCommentText(e.target.value)}
+                className="min-h-[120px] bg-white/5 border-white/10 rounded-2xl uppercase text-[11px] font-bold resize-none"
               />
             </div>
           </div>
           <DialogFooter>
             <Button 
-              className="w-full h-12 text-lg rounded-xl"
+              className="w-full h-14 bg-indigo-600 hover:bg-indigo-500 text-white font-800 uppercase tracking-widest rounded-2xl shadow-glow"
               onClick={handleFinishCourse}
-              disabled={rating === 0 || !comment || isSubmitting}
+              disabled={rating === 0 || !commentText || isSubmitting}
             >
-              Finalizar y Generar Certificado
+              Cerrar Path y Ver Certificado_
             </Button>
           </DialogFooter>
         </DialogContent>

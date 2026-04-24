@@ -77,6 +77,7 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
         course={selectedCourse} 
         enrollment={enrollment!} 
         studentName={user.fullName}
+        studentPhoto={user.photoURL}
         teachers={teachers}
         specialties={specialties}
         onBack={() => setSelectedCourse(null)} 
@@ -135,7 +136,7 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {courses
               .filter(c => filterSpecialtyId ? teachers.find(t => t.id === c.teacherId)?.specialtyId === filterSpecialtyId : true)
               .map(course => {
@@ -146,10 +147,10 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
                 return (
                   <Card 
                     key={course.id} 
-                    className="glass overflow-hidden border-white/10 group transition-all hover:scale-[1.02] cursor-pointer flex flex-col"
+                    className="glass overflow-hidden border-white/10 group transition-all hover:scale-[1.02] cursor-pointer flex flex-col min-h-[400px]"
                     onClick={() => setViewingCourseDetail(course)}
                   >
-                    <div className="h-48 md:h-56 relative overflow-hidden bg-black/40 shrink-0">
+                    <div className="aspect-video relative overflow-hidden bg-black/40 shrink-0">
                       {course.bannerUrl ? (
                         <img src={course.bannerUrl} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" referrerPolicy="no-referrer" />
                       ) : (
@@ -241,7 +242,7 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
                <Button variant="link" onClick={() => {}} className="text-indigo-400 font-800 uppercase tracking-widest text-[10px] mt-2">¡Explora el catálogo!</Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 w-full">
               {enrollments.map(enrollment => {
                 const course = courses.find(c => c.id === enrollment.courseId);
                 if (!course) return null;
@@ -252,10 +253,10 @@ export function StudentDashboard({ user }: { user: UserProfile }) {
                 return (
                   <Card 
                     key={enrollment.id} 
-                    className="glass overflow-hidden border-white/10 group transition-all hover:scale-[1.02] cursor-pointer flex flex-col" 
+                    className="glass overflow-hidden border-white/10 group transition-all hover:scale-[1.02] cursor-pointer flex flex-col min-h-[400px]" 
                     onClick={() => setSelectedCourse(course)}
                   >
-                    <div className="h-48 md:h-56 relative overflow-hidden bg-black/40 shrink-0">
+                    <div className="aspect-video relative overflow-hidden bg-black/40 shrink-0">
                       {course.bannerUrl ? (
                         <img src={course.bannerUrl} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity" referrerPolicy="no-referrer" />
                       ) : (

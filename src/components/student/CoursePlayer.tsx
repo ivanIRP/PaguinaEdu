@@ -151,7 +151,13 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
           </div>
         </ScrollArea>
         {enrollment.isFinished && (
-           <div className="p-6 bg-indigo-600/10 border-t border-indigo-500/20 mt-auto">
+           <div className="p-4 md:p-6 bg-indigo-600/10 border-t border-indigo-500/20 mt-auto shrink-0">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8 rounded-full bg-indigo-500 flex items-center justify-center text-white shadow-glow">
+                  <Star className="w-4 h-4 fill-current" />
+                </div>
+                <div className="text-[10px] font-800 uppercase tracking-widest text-indigo-400">Certificación Oficial</div>
+              </div>
               <Certificate course={course} enrollment={enrollment} studentName={studentName} />
            </div>
         )}
@@ -196,15 +202,15 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
            {!playerReady && (
              <div className="absolute inset-0 flex items-center justify-center bg-zinc-950 z-10">
                 <motion.div 
-                  animate={{ rotate: 360 }}
-                  transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-                  className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full"
+                   animate={{ rotate: 360 }}
+                   transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                   className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full"
                 />
              </div>
            )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-12">
            <div className="glass p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] border-white/10 flex items-center justify-between">
               <div>
                 <div className="text-[9px] uppercase font-800 text-white/30 tracking-widest mb-2 px-1">Professor</div>
@@ -236,6 +242,34 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
               </Button>
            </div>
         </div>
+
+        {enrollment.isFinished && (
+          <div className="glass p-6 md:p-8 rounded-[2rem] border-indigo-500/20 bg-indigo-500/5 space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white">
+                 <Star className="w-6 h-6 fill-current" />
+              </div>
+              <div>
+                <h3 className="text-xl font-800 uppercase tracking-tighter italic">¡Felicidades, {studentName}!</h3>
+                <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Has completado este entrenamiento con éxito.</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                  <div className="text-[9px] font-800 text-white/20 uppercase tracking-widest mb-1">Tu Calificación</div>
+                  <div className="flex gap-1 text-yellow-500">
+                     {Array.from({ length: 5 }).map((_, i) => (
+                       <Star key={i} className={`w-4 h-4 ${i < (enrollment.rating || 0) ? 'fill-current' : 'opacity-10'}`} />
+                     ))}
+                  </div>
+               </div>
+               <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                  <div className="text-[9px] font-800 text-white/20 uppercase tracking-widest mb-1">Documento Emitido</div>
+                  <Certificate course={course} enrollment={enrollment} studentName={studentName} />
+               </div>
+            </div>
+          </div>
+        )}
       </main>
 <Dialog open={isRatingOpen} onOpenChange={setIsRatingOpen}>
         <DialogContent className="sm:max-w-[425px]">

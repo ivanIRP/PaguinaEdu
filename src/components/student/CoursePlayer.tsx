@@ -199,39 +199,6 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
            )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-12">
-           <div className="glass p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] border-white/10 flex items-center justify-between">
-              <div>
-                <div className="text-[9px] uppercase font-800 text-white/30 tracking-widest mb-2 px-1">Professor</div>
-                <div className="flex items-center gap-3">
-                   <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 border border-white/20 shadow-glow shrink-0 overflow-hidden" />
-                   <div className="flex flex-col min-w-0">
-                      <div className="text-xs md:text-sm font-800 uppercase tracking-tighter leading-none truncate">{teacher?.name || "Specialist"}</div>
-                      <div className="text-[9px] font-bold text-indigo-400 uppercase tracking-tighter mt-1 truncate">{specialty?.name || "Senior Lead"}</div>
-                   </div>
-                </div>
-              </div>
-           </div>
-           
-           <div className="glass p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] border-white/10 flex flex-col justify-center">
-              <div className="text-[9px] uppercase font-800 text-white/30 tracking-widest mb-1 px-1">Course Content</div>
-              <div className="flex items-end justify-between">
-                 <div className="text-2xl md:text-3xl font-800 italic uppercase leading-none">{sortedLessons.length}</div>
-                 <div className="text-[9px] text-white/40 font-bold uppercase tracking-tighter">Total Lessons</div>
-              </div>
-           </div>
-
-           <div className="glass p-6 rounded-[2.5rem] border-white/10 flex flex-col justify-center">
-              <Button 
-                onClick={() => completeLesson(activeLesson.id)} 
-                disabled={enrollment.completedLessonIds.includes(activeLesson.id)}
-                className="bg-white text-black hover:bg-neutral-200 uppercase text-[10px] font-800 tracking-widest h-14 rounded-3xl shadow-glow disabled:bg-white/5 disabled:text-white/20 disabled:shadow-none transition-all"
-              >
-                 {enrollment.completedLessonIds.includes(activeLesson.id) ? "Lesson Completed ✓" : "Mark as Completed_"}
-              </Button>
-           </div>
-        </div>
-
         {enrollment.isFinished && (
           <div className="glass p-5 md:p-8 rounded-[2rem] border-indigo-500/20 bg-indigo-500/5 space-y-6 mb-8 mt-4">
             <div className="flex items-center gap-4">
@@ -266,6 +233,39 @@ export function CoursePlayer({ course, enrollment: initialEnrollment, studentNam
             </div>
           </div>
         )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-12">
+           <div className="glass p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] border-white/10 flex items-center justify-between">
+              <div>
+                <div className="text-[9px] uppercase font-800 text-white/30 tracking-widest mb-2 px-1">Professor</div>
+                <div className="flex items-center gap-3">
+                   <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 border border-white/20 shadow-glow shrink-0 overflow-hidden" />
+                   <div className="flex flex-col min-w-0">
+                      <div className="text-xs md:text-sm font-800 uppercase tracking-tighter leading-none truncate">{teacher?.name || "Specialist"}</div>
+                      <div className="text-[9px] font-bold text-indigo-400 uppercase tracking-tighter mt-1 truncate">{specialty?.name || "Senior Lead"}</div>
+                   </div>
+                </div>
+              </div>
+           </div>
+           
+           <div className="glass p-4 md:p-6 rounded-[1.5rem] md:rounded-[2.5rem] border-white/10 flex flex-col justify-center">
+              <div className="text-[9px] uppercase font-800 text-white/30 tracking-widest mb-1 px-1">Course Content</div>
+              <div className="flex items-end justify-between">
+                 <div className="text-2xl md:text-3xl font-800 italic uppercase leading-none">{sortedLessons.length}</div>
+                 <div className="text-[9px] text-white/40 font-bold uppercase tracking-tighter">Total Lessons</div>
+              </div>
+           </div>
+
+           <div className="glass p-6 rounded-[2.5rem] border-white/10 flex flex-col justify-center">
+              <Button 
+                onClick={() => completeLesson(activeLesson.id)} 
+                disabled={enrollment.completedLessonIds.includes(activeLesson.id)}
+                className="bg-white text-black hover:bg-neutral-200 uppercase text-[10px] font-800 tracking-widest h-14 rounded-3xl shadow-glow disabled:bg-white/5 disabled:text-white/20 disabled:shadow-none transition-all"
+              >
+                 {enrollment.completedLessonIds.includes(activeLesson.id) ? "Lesson Completed ✓" : "Mark as Completed_"}
+              </Button>
+           </div>
+        </div>
       </main>
 <Dialog open={isRatingOpen} onOpenChange={setIsRatingOpen}>
         <DialogContent className="sm:max-w-[425px]">

@@ -81,6 +81,11 @@ function MainLayout({ user }: { user: UserProfile }) {
     if (!deferredPrompt) {
       // If no prompt, it might be iOS or already installed but prompt missed
       console.log("No deferred prompt available");
+      if (platform === "ios") {
+        alert("En iOS, pulsa el botón 'Compartir' y luego 'Añadir a pantalla de inicio'.");
+      } else {
+        alert("Si no ves la opción de instalar, busca 'Instalar aplicación' o 'Añadir a pantalla de inicio' en el menú de ajustes de tu navegador.");
+      }
       setIsMobileAlertOpen(false);
       return;
     }
@@ -132,7 +137,8 @@ function MainLayout({ user }: { user: UserProfile }) {
         currentTheme={theme} 
         onInstall={handleInstallClick}
         isInstallAvailable={!!deferredPrompt}
-      />      <main className="container mx-auto py-4 md:py-8 px-4">
+      />
+      <main className="container mx-auto py-4 md:py-8 px-4">
         {user.role === "admin" ? (
           <AdminDashboard user={user} />
         ) : (
@@ -169,7 +175,7 @@ function MainLayout({ user }: { user: UserProfile }) {
                     Instala la App_
                   </h3>
                   <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest leading-normal">
-                    Lleva EduStream a tu pantalla de inicio para una experiencia fluida.
+                    Para instalar, primero pulsa ABRIR y luego busca "Instalar" o "Añadir a pantalla" en tu navegador.
                   </p>
                 </div>
               </div>
@@ -180,7 +186,7 @@ function MainLayout({ user }: { user: UserProfile }) {
                     className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95"
                     onClick={() => window.open(window.location.href, '_blank')}
                   >
-                    <ExternalLink className="w-3.5 h-3.5" /> ABRIR
+                    <ExternalLink className="w-3.5 h-3.5" /> ABRIR EN PESTAÑA_
                   </Button>
                 ) : (
                   <Button 

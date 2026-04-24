@@ -1,6 +1,17 @@
-const CACHE_NAME = 'edustream-v1';
+const CACHE_NAME = 'edustream-v2';
+const ASSETS_TO_CACHE = [
+  '/',
+  '/index.html',
+  '/manifest.webmanifest',
+  'https://cdn-icons-png.flaticon.com/512/3135/3135673.png'
+];
 
 self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
+    })
+  );
   self.skipWaiting();
 });
 

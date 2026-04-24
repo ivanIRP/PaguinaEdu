@@ -2,6 +2,7 @@
   "name": "EduStream Learning",
   "short_name": "EduStream",
   "description": "Plataforma de aprendizaje core v2.4",
+  "id": "com.edustream.learning",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

@@ -3,49 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
+    <meta name="theme-color" content="#6366f1" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135673.png" />
     <title>EduStream Learning</title>
   </head>
   <body>
     <div id="root"></div>
     <script>
-      // Aggressively clear EVERYTHING to fix "Corrupted Content" and "Unknown Host" errors from old domain
-      (function() {
-        console.log('Cleaning environment...');
-        
-        // 1. Unregister Service Workers
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(regs => {
-            for(let reg of regs) {
-              reg.unregister().then(() => console.log('SW unregistered'));
-            }
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(reg => {
+            console.log('SW registered:', reg.scope);
+          }).catch(err => {
+            console.log('SW failed:', err);
           });
-        }
-
-        // 2. Clear Caches
-        if ('caches' in window) {
-          caches.keys().then(names => {
-            for (let name of names) caches.delete(name);
-          });
-        }
-
-        // 3. Clear Storage
-        try {
-          sessionStorage.clear();
-          // We don't wipe localStorage automatically to avoid losing user settings/session
-          // unless explicitly requested by the user later.
-        } catch(e) {}
-        
-        // 4. Reload if we detect a blank screen after a timeout (likely broken script cache)
-        setTimeout(() => {
-          if (!document.getElementById('root')?.hasChildNodes()) {
-            console.warn('App failed to load. Forcing hard reload...');
-            window.location.reload(true);
-          }
-        }, 5000);
-      })();
+        });
+      }
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>

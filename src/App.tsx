@@ -95,11 +95,17 @@ function MainLayout({ user }: { user: UserProfile }) {
         }
       } catch (err) {
         console.error("Error al mostrar el prompt:", err);
+        // Fallback to manual instructions if even prompt fails
+        if (platform === "ios") {
+          alert("PARA INSTALAR:\n1. Pulsa 'Compartir'\n2. 'Añadir a pantalla de inicio'");
+        } else {
+          alert("Pulsa el menú (⋮) y elige 'Instalar aplicación'.");
+        }
       }
     } else if (platform === "ios") {
-      alert("PARA INSTALAR EN IPHONE:\n\n1. Pulsa el botón 'Compartir' (el cuadrado con flecha)\n2. Busca y pulsa 'Añadir a pantalla de inicio'\n3. Pulsa 'Añadir' en la esquina superior.");
+      alert("INSTALACIÓN EN IPHONE:\n\n1. Pulsa el botón de COMPARTIR (cuadrado con flecha abajo en el navegador).\n2. Elige la opción 'Añadir a pantalla de inicio'.\n3. Pulsa 'Añadir'.");
     } else {
-      alert("INSTRUCCIONES DE INSTALACIÓN:\n\n1. Pulsa los tres puntos (⋮) en la esquina superior derecha del navegador.\n2. Selecciona 'Instalar aplicación' o 'Añadir a pantalla de inicio'.");
+      alert("PARA INSTALAR:\n\nPulsa los tres puntos (⋮) en tu navegador y selecciona 'Instalar aplicación' o 'Añadir a pantalla de inicio'.");
     }
   };
 
@@ -133,33 +139,33 @@ function MainLayout({ user }: { user: UserProfile }) {
       {/* Mobile PWA Notification Toast */}
       <AnimatePresence>
         {isMobileAlertOpen && (
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
+          <motion.div 
+            initial={{ y: -100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-0 left-0 right-0 z-[100] p-4 pointer-events-none"
+            exit={{ y: -100, opacity: 0 }}
+            className="fixed top-2 left-2 right-2 md:top-4 md:left-auto md:right-4 md:w-96 z-[100] pointer-events-none"
           >
-            <div className="max-w-md mx-auto bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-3xl p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] pointer-events-auto flex items-center gap-4">
-              <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20">
-                <Download className="w-6 h-6 text-white animate-bounce" />
+            <div className="bg-zinc-900/90 backdrop-blur-2xl border border-white/10 rounded-2xl p-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)] pointer-events-auto flex items-center gap-4 ring-1 ring-white/20">
+              <div className="w-11 h-11 bg-indigo-600 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/30">
+                <Smartphone className="w-5 h-5 text-white animate-pulse" />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-black uppercase tracking-tight text-white leading-tight">wz_edustream Móvil_</h4>
-                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest truncate">Versión 2.0 • Descargar</p>
+                <h4 className="text-xs font-black uppercase tracking-tight text-white leading-tight">Instalar wz_edustream_</h4>
+                <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest truncate">App Nativa • Sin Navegador</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-1">
                 <Button 
                   size="sm"
-                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-[10px] px-6 h-10 rounded-xl shadow-glow transition-transform active:scale-90"
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-[9px] px-4 h-8 rounded-lg shadow-glow transition-all active:scale-90"
                   onClick={handleInstallClick}
                 >
                   DESCARGAR
                 </Button>
                 <button 
                   onClick={() => setIsMobileAlertOpen(false)}
-                  className="p-2 text-zinc-500 hover:text-white transition-colors"
+                  className="p-1.5 text-zinc-500 hover:text-white transition-colors"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

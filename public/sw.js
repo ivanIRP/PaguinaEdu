@@ -1,4 +1,4 @@
-const CACHE_NAME = 'edustream-cache-v1';
+const CACHE_NAME = 'wz-edustream-cache-v1';
 const OFFLINE_URL = '/index.html';
 
 const ASSETS_TO_CACHE = [

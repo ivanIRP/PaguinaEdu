@@ -39,11 +39,11 @@ function MainLayout({ user }: { user: UserProfile }) {
       e.preventDefault();
       setDeferredPrompt(e);
       
-      // Check if already installed
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
       const nav = window.navigator as any;
       const isStandalone = nav?.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
       
-      if (!isStandalone) {
+      if (isMobile && !isStandalone) {
         setIsMobileAlertOpen(true);
       }
     };
@@ -62,8 +62,13 @@ function MainLayout({ user }: { user: UserProfile }) {
     const nav = window.navigator as any;
     const isStandalone = nav?.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
     
+    // Only show if mobile and not standalone
+    // If deferredPrompt is already there, it will be handled by the listener, 
+    // but IOS doesn't have beforeinstallprompt so we show the guide after a delay
     if (isMobile && !isStandalone) {
-      setTimeout(() => setIsMobileAlertOpen(true), 3000);
+      setTimeout(() => {
+        setIsMobileAlertOpen(true);
+      }, 5000);
     }
 
     return () => {

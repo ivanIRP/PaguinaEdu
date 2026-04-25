@@ -43,11 +43,7 @@ function MainLayout({ user }: { user: UserProfile }) {
       const nav = window.navigator as any;
       const isStandalone = nav?.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
       
-      // Check dismissal
-      const lastDismissed = localStorage.getItem('pwa_prompt_dismissed');
-      const isDismissed = lastDismissed && (Date.now() - parseInt(lastDismissed)) < 1000 * 60 * 60 * 24;
-
-      if (!isStandalone && !isDismissed) {
+      if (!isStandalone) {
         setIsMobileAlertOpen(true);
       }
     };
@@ -65,8 +61,6 @@ function MainLayout({ user }: { user: UserProfile }) {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     const nav = window.navigator as any;
     const isStandalone = nav?.standalone || (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-    const lastDismissed = localStorage.getItem('pwa_prompt_dismissed');
-    const isDismissed = lastDismissed && (Date.now() - parseInt(lastDismissed)) < 1000 * 60 * 60 * 24;
     
     if (isMobile && !isStandalone) {
       setTimeout(() => setIsMobileAlertOpen(true), 3000);
@@ -135,7 +129,6 @@ function MainLayout({ user }: { user: UserProfile }) {
               <button 
                 onClick={() => {
                   setIsMobileAlertOpen(false);
-                  localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
                 }}
                 className="absolute top-4 right-4 p-2 text-white/20 hover:text-white transition-colors"
                 aria-label="Cerrar"

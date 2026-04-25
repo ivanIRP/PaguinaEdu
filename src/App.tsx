@@ -141,52 +141,30 @@ function MainLayout({ user }: { user: UserProfile }) {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
-            className="fixed bottom-6 left-4 right-4 z-50 md:left-auto md:right-6 md:w-96"
+            className="fixed bottom-0 left-0 right-0 z-[100] p-4 pointer-events-none"
           >
-            <div className="glass border-white/10 bg-zinc-950/90 backdrop-blur-2xl rounded-[2rem] p-5 shadow-2xl relative overflow-hidden ring-1 ring-white/20">
-              <div className="absolute top-0 left-0 w-full h-1 bg-indigo-600 shadow-glow" />
-              
-              <button 
-                onClick={() => {
-                  setIsMobileAlertOpen(false);
-                }}
-                className="absolute top-4 right-4 p-2 text-white/20 hover:text-white transition-colors"
-                aria-label="Cerrar"
-              >
-                <X className="w-4 h-4" />
-              </button>
-
-              <div className="flex items-start gap-4 pr-6">
-                <div className="bg-indigo-600/20 p-3 rounded-2xl border border-indigo-500/30 shrink-0">
-                  <Smartphone className="w-6 h-6 text-indigo-400" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-900 tracking-tighter uppercase italic leading-none mb-1 text-indigo-400">
-                    EduStream Móvil_
-                  </h3>
-                  <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest leading-normal">
-                    {platform === "ios" 
-                      ? "Pulsa el botón para ver cómo añadir EduStream a tu iPhone."
-                      : "Instala ahora para tener acceso total sin navegador."}
-                  </p>
-                </div>
+            <div className="max-w-md mx-auto bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-3xl p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] pointer-events-auto flex items-center gap-4">
+              <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20">
+                <Smartphone className="w-6 h-6 text-white" />
               </div>
-
-              <div className="mt-5 flex gap-2">
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-black uppercase tracking-tight text-white leading-tight">Instalar EduStream_</h4>
+                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest truncate">v2.0 • Acceso Directo</p>
+              </div>
+              <div className="flex gap-2">
                 <Button 
-                  className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95 animate-pulse"
+                  size="sm"
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-[10px] px-4 h-9 rounded-xl shadow-glow transition-transform active:scale-90"
                   onClick={handleInstallClick}
                 >
-                  {platform === "ios" ? <Apple className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
-                  {platform === "ios" ? 'VER GUÍA' : 'INSTALAR_'}
+                  {platform === "ios" ? "GUÍA" : "INSTALAR"}
                 </Button>
-                <Button 
-                  variant="outline" 
-                  className="flex-1 h-12 border-white/10 text-zinc-400 hover:text-white font-900 uppercase text-[10px] tracking-widest rounded-xl"
+                <button 
                   onClick={() => setIsMobileAlertOpen(false)}
+                  className="p-2 text-zinc-500 hover:text-white"
                 >
-                  CERRAR
-                </Button>
+                  <X className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </motion.div>

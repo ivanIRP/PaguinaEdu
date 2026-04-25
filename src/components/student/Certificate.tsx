@@ -92,7 +92,7 @@ export function Certificate({ course, enrollment, studentName }: CertificateProp
           </div>
           
           <div className="space-y-6">
-            <h1 className="text-6xl font-serif italic mb-8 tracking-widest" style={{ color: "#059669" }}>EduStream</h1>
+            <h1 className="text-6xl font-serif italic mb-8 tracking-widest" style={{ color: "#059669" }}>wz_edustream</h1>
             
             <p className="text-xl font-sans uppercase tracking-[0.3em]" style={{ color: "#6b7280" }}>Certificado de Finalización</p>
             
@@ -109,7 +109,7 @@ export function Certificate({ course, enrollment, studentName }: CertificateProp
             <div className="pt-12 flex justify-center w-full px-12">
                <div className="text-center">
                   <div className="w-64 border-b border-black mb-1"></div>
-                  <p className="text-sm font-bold uppercase tracking-wider" style={{ color: "#111827" }}>Validación Académica • EduStream</p>
+                  <p className="text-sm font-bold uppercase tracking-wider" style={{ color: "#111827" }}>Validación Académica • wz_edustream</p>
                </div>
             </div>
             

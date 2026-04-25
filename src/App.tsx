@@ -51,7 +51,7 @@ function MainLayout({ user }: { user: UserProfile }) {
     const handleAppInstalled = () => {
       setDeferredPrompt(null);
       setIsMobileAlertOpen(false);
-      alert("¡EduStream instalado con éxito!");
+      alert("¡WZ_EDUSTREAM instalado con éxito!");
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -128,29 +128,33 @@ function MainLayout({ user }: { user: UserProfile }) {
       {/* Mobile PWA Notification Toast */}
       <AnimatePresence>
         {isMobileAlertOpen && (
-          <motion.div 
+          <motion.div
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             className="fixed bottom-0 left-0 right-0 z-[100] p-4 pointer-events-none"
           >
-            <div className="max-w-md mx-auto bg-indigo-600 border border-white/20 rounded-2xl p-4 shadow-2xl pointer-events-auto flex items-center gap-4">
-              <div className="bg-white/20 p-2 rounded-xl">
-                <Download className="w-5 h-5 text-white animate-bounce" />
+            <div className="max-w-md mx-auto bg-zinc-900/95 backdrop-blur-xl border border-white/10 rounded-3xl p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] pointer-events-auto flex items-center gap-4">
+              <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-indigo-500/20">
+                <Download className="w-6 h-6 text-white animate-bounce" />
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-black text-white uppercase tracking-tight">Descargar EduStream_</p>
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-black uppercase tracking-tight text-white leading-tight">wz_edustream Móvil_</h4>
+                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest truncate">Versión 2.0 • Descargar</p>
               </div>
-              <div className="flex gap-1">
+              <div className="flex gap-2">
                 <Button 
                   size="sm"
-                  className="bg-white text-indigo-600 hover:bg-zinc-100 font-black text-[10px] px-5 h-9 rounded-xl shadow-lg transition-transform active:scale-95"
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-black text-[10px] px-6 h-10 rounded-xl shadow-glow transition-transform active:scale-90"
                   onClick={handleInstallClick}
                 >
-                  DESCARGAR AHORA
+                  DESCARGAR
                 </Button>
-                <button onClick={() => setIsMobileAlertOpen(false)} className="p-2 text-white/50 hover:text-white">
-                  <X className="w-4 h-4" />
+                <button 
+                  onClick={() => setIsMobileAlertOpen(false)}
+                  className="p-2 text-zinc-500 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
                 </button>
               </div>
             </div>

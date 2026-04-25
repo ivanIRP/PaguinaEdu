@@ -1,6 +1,6 @@
 {
-  "name": "EduStream Learning",
-  "short_name": "EduStream",
+  "name": "WZ_EDUSTREAM Learning",
+  "short_name": "WZ_EDUSTREAM",
   "description": "Plataforma de aprendizaje integral",
   "start_url": "/",
   "display": "standalone",

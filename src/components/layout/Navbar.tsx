@@ -31,7 +31,7 @@ export function Navbar({ user, onToggleTheme, currentTheme, onInstall, isInstall
             <GraduationCap className="w-5 h-5 md:w-6 md:h-6 text-white" />
           </div>
           <div className="flex flex-col">
-            <span className="font-800 text-xl md:text-2xl tracking-tighter uppercase italic text-indigo-500 leading-none">EduStream_</span>
+            <span className="font-800 text-xl md:text-2xl tracking-tighter uppercase italic text-indigo-500 leading-none">wz_edustream_</span>
             <span className="text-[7px] md:text-[9px] uppercase tracking-[0.2em] md:tracking-[0.3em] opacity-40">Core learning v2.4</span>
           </div>
         </div>

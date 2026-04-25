@@ -243,7 +243,7 @@ export function AuthGate({ children }: { children: (user: UserProfile) => React.
                       <GraduationCap className="w-10 h-10 text-white" />
                     </div>
                     <div>
-                      <h1 className="text-5xl font-800 tracking-tighter uppercase italic text-indigo-500 leading-none">EduStream_</h1>
+                      <h1 className="text-5xl font-800 tracking-tighter uppercase italic text-indigo-500 leading-none">wz_edustream_</h1>
                       <p className="text-[10px] uppercase tracking-[0.4em] opacity-40 mt-2 font-bold">Next Generation Learning</p>
                     </div>
                   </div>

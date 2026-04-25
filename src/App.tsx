@@ -68,7 +68,7 @@ function MainLayout({ user }: { user: UserProfile }) {
     if (isMobile && !isStandalone) {
       setTimeout(() => {
         setIsMobileAlertOpen(true);
-      }, 5000);
+      }, 2000);
     }
 
     return () => {
@@ -78,17 +78,32 @@ function MainLayout({ user }: { user: UserProfile }) {
   }, []);
 
   const handleInstallClick = async () => {
+    // Check if we are in an iframe (IA Studio Preview)
+    const isInIframe = window.self !== window.top;
+    if (isInIframe) {
+      // PWAs cannot be installed from iframes. Open in new tab to allow installation.
+      window.open(window.location.href, '_blank');
+      return;
+    }
+
     if (deferredPrompt) {
-      deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setDeferredPrompt(null);
-        setIsMobileAlertOpen(false);
+      try {
+        await deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log(`User response to install prompt: ${outcome}`);
+        if (outcome === 'accepted') {
+          setDeferredPrompt(null);
+          setIsMobileAlertOpen(false);
+        }
+      } catch (err) {
+        console.error("Installation prompt failed:", err);
       }
     } else if (platform === "ios") {
-      alert("Para instalar en iOS:\n1. Pulsa el icono 'Compartir'\n2. Selecciona 'Añadir a pantalla de inicio'");
+      // For iOS, explain the manual step clearly in a way that feels "direct"
+      alert("Para instalar en iPhone:\n\n1. Pulsa el botón de 'Compartir' (cuadrado con flecha)\n2. Elige 'Añadir a pantalla de inicio'\n3. Pulsa 'Añadir'");
     } else {
-      alert("Por favor, usa el menú del navegador para instalar la aplicación.");
+      // Fallback if beforeinstallprompt hasn't fired yet
+      alert("Preparando el instalador... Si no aparece, pulsa los tres puntos (⋮) en tu navegador y selecciona 'Instalar aplicación'.");
     }
   };
 

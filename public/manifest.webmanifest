@@ -2,11 +2,12 @@
   "name": "EduStream Learning",
   "short_name": "EduStream",
   "description": "Plataforma de aprendizaje integral",
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#09090b",
   "theme_color": "#6366f1",
   "scope": "/",
+  "id": "/?source=pwa",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3135/3135673.png",

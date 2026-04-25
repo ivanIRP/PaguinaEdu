@@ -1,8 +1,8 @@
-import { Role, UserProfile } from "../../types";
+import { UserProfile } from "../../types";
 import { auth } from "../../lib/firebase";
 import { signOut } from "firebase/auth";
 import { Button } from "../ui/button";
-import { LogOut, Sun, Moon, GraduationCap, User, Smartphone, Download, BookOpen } from "lucide-react";
+import { LogOut, Sun, Moon, GraduationCap, User, BookOpen } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,11 +18,9 @@ interface NavbarProps {
   user: UserProfile;
   onToggleTheme: () => void;
   currentTheme: string;
-  onInstall?: () => void;
-  isInstallAvailable?: boolean;
 }
 
-export function Navbar({ user, onToggleTheme, currentTheme, onInstall, isInstallAvailable }: NavbarProps) {
+export function Navbar({ user, onToggleTheme, currentTheme }: NavbarProps) {
   return (
     <nav className="border-b border-white/5 glass sticky top-0 z-50">
       <div className="container mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
@@ -43,17 +41,6 @@ export function Navbar({ user, onToggleTheme, currentTheme, onInstall, isInstall
             <span className="hover:text-white cursor-pointer transition-colors">Resources</span>
           </div>
           
-          {isInstallAvailable && onInstall && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onInstall}
-              className="hidden sm:flex border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 gap-2 h-9 px-4 rounded-xl uppercase text-[10px] font-bold tracking-widest transition-all"
-            >
-              <Download className="w-3 h-3" /> Instalar App
-            </Button>
-          )}
-
           <Button variant="ghost" size="icon" onClick={onToggleTheme} className="rounded-full w-9 h-9 md:w-10 md:h-10">
             {currentTheme === "light" ? <Moon className="w-4 h-4 md:w-5 md:h-5" /> : <Sun className="w-4 h-4 md:w-5 md:h-5" />}
           </Button>

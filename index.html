@@ -4,9 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="theme-color" content="#6366f1" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="WZ_EDUSTREAM" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3135/3135673.png" />
     <title>WZ_EDUSTREAM Learning</title>
@@ -16,11 +13,7 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').then(reg => {
-            console.log('SW registered:', reg.scope);
-          }).catch(err => {
-            console.log('SW failed:', err);
-          });
+          navigator.serviceWorker.register('/sw.js');
         });
       }
     </script>

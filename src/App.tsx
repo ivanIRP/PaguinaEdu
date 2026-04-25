@@ -80,21 +80,26 @@ function MainLayout({ user }: { user: UserProfile }) {
   const handleInstallClick = async () => {
     const isInIframe = window.self !== window.top;
     if (isInIframe) {
+      alert("Para instalar la aplicación, se abrirá en una pestaña nueva. Vuelve a pulsar 'DESCARGAR' allí.");
       window.open(window.location.href, '_blank');
       return;
     }
 
     if (deferredPrompt) {
-      await deferredPrompt.prompt();
-      const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') {
-        setDeferredPrompt(null);
-        setIsMobileAlertOpen(false);
+      try {
+        await deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          setDeferredPrompt(null);
+          setIsMobileAlertOpen(false);
+        }
+      } catch (err) {
+        console.error("Error al mostrar el prompt:", err);
       }
     } else if (platform === "ios") {
-      alert("Para descargar en iPhone:\n\n1. Pulsa 'Compartir'\n2. 'Añadir a pantalla de inicio'\n3. 'Añadir'");
+      alert("PARA INSTALAR EN IPHONE:\n\n1. Pulsa el botón 'Compartir' (el cuadrado con flecha)\n2. Busca y pulsa 'Añadir a pantalla de inicio'\n3. Pulsa 'Añadir' en la esquina superior.");
     } else {
-      alert("Haz clic en los tres puntos (⋮) y selecciona 'Instalar aplicación'.");
+      alert("INSTRUCCIONES DE INSTALACIÓN:\n\n1. Pulsa los tres puntos (⋮) en la esquina superior derecha del navegador.\n2. Selecciona 'Instalar aplicación' o 'Añadir a pantalla de inicio'.");
     }
   };
 

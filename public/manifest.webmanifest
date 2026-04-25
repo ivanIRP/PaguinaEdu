@@ -1,38 +1,16 @@
 {
-  "name": "EduStream Learning Platform",
+  "name": "EduStream Learning",
   "short_name": "EduStream",
-  "description": "Plataforma de aprendizaje inteligente con acceso offline y notificaciones.",
-  "id": "com.edustream.learning.v3",
-  "start_url": "/",
+  "description": "Plataforma de aprendizaje integral",
+  "start_url": ".",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
-  "orientation": "portrait",
   "background_color": "#09090b",
   "theme_color": "#6366f1",
   "scope": "/",
-  "categories": ["education", "productivity"],
-  "prefer_related_applications": false,
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/3135/3135673.png",
-      "sizes": "144x144",
-      "type": "image/png"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/3135/3135673.png",
       "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/3135/3135673.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/3135/3135673.png",
-      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
@@ -41,12 +19,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Mis Cursos",
-      "url": "/?tab=my-courses"
     }
   ]
 }

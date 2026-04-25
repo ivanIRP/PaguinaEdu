@@ -12,19 +12,13 @@ import { StudentDashboard } from "./components/student/StudentDashboard";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "./lib/firebase";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "./components/ui/dialog";
-import { Smartphone, Download, CheckCircle, ExternalLink, Apple, X, QrCode, ShieldCheck, Zap } from "lucide-react";
+import { Smartphone, Download, CheckCircle, ExternalLink, Apple, X } from "lucide-react";
 import { Button } from "./components/ui/button";
 import { motion, AnimatePresence } from "motion/react";
-import { InstallationScanner } from "./components/pwa/InstallationScanner";
-import { QRCodeBridge } from "./components/pwa/QRCodeBridge";
 
 function MainLayout({ user }: { user: UserProfile }) {
   const [theme, setTheme] = useState(user.theme || "dark");
   const [isMobileAlertOpen, setIsMobileAlertOpen] = useState(false);
-  const [showIOSGuide, setShowIOSGuide] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
-  const [isScanComplete, setIsScanComplete] = useState(false);
-  const [showQRCode, setShowQRCode] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [platform, setPlatform] = useState<"ios" | "android" | "other">("other");
 
@@ -59,12 +53,9 @@ function MainLayout({ user }: { user: UserProfile }) {
     };
 
     const handleAppInstalled = () => {
-      console.log("PWA was installed");
       setDeferredPrompt(null);
       setIsMobileAlertOpen(false);
-      setIsScanning(false);
-      setIsScanComplete(false);
-      alert("¡Instalación completa! Ya puedes usar EduStream desde tu pantalla de inicio.");
+      alert("¡EduStream instalado con éxito!");
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -77,7 +68,7 @@ function MainLayout({ user }: { user: UserProfile }) {
     const lastDismissed = localStorage.getItem('pwa_prompt_dismissed');
     const isDismissed = lastDismissed && (Date.now() - parseInt(lastDismissed)) < 1000 * 60 * 60 * 24;
     
-    if (isMobile && !isStandalone && !isDismissed) {
+    if (isMobile && !isStandalone) {
       setTimeout(() => setIsMobileAlertOpen(true), 3000);
     }
 
@@ -88,64 +79,17 @@ function MainLayout({ user }: { user: UserProfile }) {
   }, []);
 
   const handleInstallClick = async () => {
-    // Check if we are in an iframe
-    const isInIframe = window.self !== window.top;
-    
-    if (isInIframe) {
-      window.open(window.location.href, '_blank');
-      return;
-    }
-
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    if (!isMobile && !isScanning && !isScanComplete) {
-      setShowQRCode(true);
-      return;
-    }
-
-    if (!isScanning && !isScanComplete) {
-      setIsScanning(true);
-      return;
-    }
-
-    if (isScanComplete) {
-       proceedWithInstallation();
-       return;
-    }
-
-    // Default fallback
-    proceedWithInstallation();
-  };
-
-  const proceedWithInstallation = async () => {
-    try {
-      if (platform === "ios") {
-        setShowIOSGuide(true);
-        return;
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+        setIsMobileAlertOpen(false);
       }
-
-      if (deferredPrompt) {
-        // MUST BE CALLED FROM USER GESTURE (This click handler)
-        await deferredPrompt.prompt();
-        const choiceResult = await deferredPrompt.userChoice;
-        if (choiceResult.outcome === 'accepted') {
-          setDeferredPrompt(null);
-        }
-      } else {
-        // Fallback for missing prompt - provide clearer instructions
-        if (platform === "android") {
-          alert("El instalador rápido está tardando en responder.\n\nPrueba esto:\n1. Pulsa los tres puntos (⋮) arriba a la derecha.\n2. Selecciona 'Instalar aplicación' o 'Añadir a pantalla de inicio'.");
-        } else {
-          alert("El sistema de instalación nativo no respondió. Por favor, usa la opción 'Instalar aplicación' o 'Añadir a pantalla de inicio' en el menú (⋮) de tu navegador.");
-        }
-      }
-    } catch (err) {
-      console.error("Installation failed:", err);
-      alert("Para instalar: Pulsa los tres puntos (⋮) de tu navegador y elige 'Instalar aplicación'.");
-    } finally {
-      setIsScanning(false);
-      setIsScanComplete(false);
-      setIsMobileAlertOpen(false);
+    } else if (platform === "ios") {
+      alert("Para instalar en iOS:\n1. Pulsa el icono 'Compartir'\n2. Selecciona 'Añadir a pantalla de inicio'");
+    } else {
+      alert("Por favor, usa el menú del navegador para instalar la aplicación.");
     }
   };
 
@@ -188,10 +132,9 @@ function MainLayout({ user }: { user: UserProfile }) {
             <div className="glass border-white/10 bg-zinc-950/90 backdrop-blur-2xl rounded-[2rem] p-5 shadow-2xl relative overflow-hidden ring-1 ring-white/20">
               <div className="absolute top-0 left-0 w-full h-1 bg-indigo-600 shadow-glow" />
               
-                <button 
+              <button 
                 onClick={() => {
                   setIsMobileAlertOpen(false);
-                  setShowIOSGuide(false);
                   localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
                 }}
                 className="absolute top-4 right-4 p-2 text-white/20 hover:text-white transition-colors"
@@ -202,117 +145,36 @@ function MainLayout({ user }: { user: UserProfile }) {
 
               <div className="flex items-start gap-4 pr-6">
                 <div className="bg-indigo-600/20 p-3 rounded-2xl border border-indigo-500/30 shrink-0">
-                  {isScanning ? (
-                    <Zap className="w-6 h-6 text-indigo-400 animate-pulse" />
-                  ) : showQRCode ? (
-                    <QrCode className="w-6 h-6 text-indigo-400" />
-                  ) : (
-                    <Smartphone className="w-6 h-6 text-indigo-400" />
-                  )}
+                  <Smartphone className="w-6 h-6 text-indigo-400" />
                 </div>
                 <div>
                   <h3 className="text-lg font-900 tracking-tighter uppercase italic leading-none mb-1 text-indigo-400">
-                    {isScanning ? "Escaneando Sistema_" : showQRCode ? "Vinculación Móvil_" : "EduStream Móvil_"}
+                    EduStream Móvil_
                   </h3>
                   <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest leading-normal">
-                    {isScanning 
-                      ? "Verificando compatibilidad y preparando paquete de instalación segura."
-                      : showQRCode 
-                        ? "Detectado navegador de escritorio. Escanea para continuar en tu smartphone."
-                        : window.self !== window.top 
-                          ? "MODO SEGURO: Pulsa ABRIR para activar la instalación de la App oficial."
-                          : platform === "ios" 
-                            ? "Apple requiere una instalación manual. Pulsa el botón para ver cómo añadir EduStream a tu iPhone."
-                            : "SISTEMA LISTO: Instala ahora para tener acceso total sin navegador."}
+                    {platform === "ios" 
+                      ? "Pulsa el botón para ver cómo añadir EduStream a tu iPhone."
+                      : "Instala ahora para tener acceso total sin navegador."}
                   </p>
                 </div>
               </div>
 
-              {isScanning ? (
-                <InstallationScanner 
-                  platform={platform} 
-                  onComplete={() => {
-                    setIsScanning(false);
-                    setIsScanComplete(true);
-                  }} 
-                />
-              ) : showQRCode ? (
-                <QRCodeBridge />
-              ) : (
-                <>
-                  {isScanComplete && (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="mb-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-center"
-                    >
-                      <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <ShieldCheck className="w-6 h-6 text-emerald-400" />
-                      </div>
-                      <p className="text-[10px] font-900 uppercase text-emerald-400 tracking-widest mb-1">Verificación completada</p>
-                      <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-tight">Pulsa el botón de abajo para autorizar la instalación final.</p>
-                    </motion.div>
-                  )}
-                  {showIOSGuide && platform === "ios" && (
-                <motion.div 
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  className="mt-4 p-4 bg-white/5 rounded-2xl border border-white/10 space-y-3"
+              <div className="mt-5 flex gap-2">
+                <Button 
+                  className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95 animate-pulse"
+                  onClick={handleInstallClick}
                 >
-                  <p className="text-[10px] font-bold uppercase text-indigo-400 tracking-tighter">Pasos para instalar en iPhone:</p>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3 text-[10px] text-zinc-300 font-medium">
-                      <span className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[8px] font-black shrink-0">1</span>
-                      <span>Pulsa el icono <span className="text-white bg-white/10 px-1.5 py-0.5 rounded border border-white/20">Compartir</span> (cuadrado con flecha)</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-[10px] text-zinc-300 font-medium">
-                      <span className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[8px] font-black shrink-0">2</span>
-                      <span>Busca <span className="text-white font-bold italic">"Añadir a pantalla de inicio"</span></span>
-                    </div>
-                    <div className="flex items-center gap-3 text-[10px] text-zinc-300 font-medium">
-                      <span className="w-5 h-5 rounded-full bg-indigo-600 flex items-center justify-center text-[8px] font-black shrink-0">3</span>
-                      <span>Pulsa <span className="text-indigo-400 font-bold uppercase tracking-tighter">Añadir</span> en la esquina superior</span>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </>
-          )}
-
-              {!isScanning && (
-                <div className="mt-5 flex gap-2">
-                  {window.self !== window.top ? (
-                    <Button 
-                      className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95 animate-pulse"
-                      onClick={() => window.open(window.location.href, '_blank')}
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" /> ABRIR PARA INSTALAR_
-                    </Button>
-                  ) : (
-                    <Button 
-                      className="flex-1 h-12 bg-indigo-600 hover:bg-indigo-500 text-white font-900 uppercase text-[10px] tracking-widest rounded-xl shadow-glow flex gap-2 transition-all active:scale-95 animate-pulse"
-                      onClick={handleInstallClick}
-                    >
-                      {isScanComplete ? <Zap className="w-3.5 h-3.5" /> : showQRCode ? <ExternalLink className="w-3.5 h-3.5" /> : platform === "ios" ? <Apple className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
-                      {isScanComplete ? 'FINALIZAR INSTALACIÓN' : showQRCode ? 'CARGAR EN MÓVIL' : platform === "ios" ? 'VER GUÍA' : 'INSTALAR AHORA_'}
-                    </Button>
-                  )}
-                  <Button 
-                    variant="outline" 
-                    className="flex-1 h-12 border-white/10 text-zinc-400 hover:text-white font-900 uppercase text-[10px] tracking-widest rounded-xl"
-                    onClick={() => {
-                      setIsMobileAlertOpen(false);
-                      setShowIOSGuide(false);
-                      setIsScanning(false);
-                      setIsScanComplete(false);
-                      setShowQRCode(false);
-                      localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
-                    }}
-                  >
-                    CERRAR
-                  </Button>
-                </div>
-              )}
+                  {platform === "ios" ? <Apple className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
+                  {platform === "ios" ? 'VER GUÍA' : 'INSTALAR_'}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex-1 h-12 border-white/10 text-zinc-400 hover:text-white font-900 uppercase text-[10px] tracking-widest rounded-xl"
+                  onClick={() => setIsMobileAlertOpen(false)}
+                >
+                  CERRAR
+                </Button>
+              </div>
             </div>
           </motion.div>
         )}
